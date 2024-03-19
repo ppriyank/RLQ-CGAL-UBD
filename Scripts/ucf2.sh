@@ -38,11 +38,6 @@ deepchange_pose=....
 deepchange_gender=Scripts/Helper/DeepChange_Gender.csv
 
 
-BATCH_SIZE=32
-GPUS=0,1
-NUM_GPU=2
-RUN_NO=1
-
 ROOT=$ltcc
 DATASET=ltcc_cc_gender
 SIL=$ltcc_sil
@@ -51,6 +46,10 @@ GENDER=$ltcc_gender
 DATASET_COLORS=ltcc_colors
 DATASET_ORIG=ltcc
 
+BATCH_SIZE=32
+GPUS=0,1
+NUM_GPU=2
+RUN_NO=1
 
 
 # Vanilla CAL 
@@ -58,18 +57,39 @@ PORT=12345
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal.yaml --dataset $DATASET_ORIG \
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --backbone="resnet50" --batch_size $BATCH_SIZE --only-CAL 
 
-
 # Vanilla CAL + Clothes Aug 
 PORT=12346
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal.yaml --dataset $DATASET_COLORS \
-    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50" --batch_size $BATCH_SIZE --only-CAL --train_fn="2feats_pair27" 
-
+    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50" --batch_size $BATCH_SIZE --only-CAL --train_fn="2feats_pair27" --seed=$RUN_NO 
 
 # BaseModel -- Foreground Aug 
 PORT=12347
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET_ORIG \
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair3" --additional_loss 'kl_o_oid' 
 
+
+###################### Only Gender 
+PORT=12348
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair14" \
+    --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --additional_loss="kl_o_oid" --seed=$RUN_NO 
+
+###################### Gender Variants
+# Gender CGAL Branch 
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair14" \
+    --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --additional_loss="kl_o_oid" --seed=$RUN_NO 
+# Gender CGAL Branch + CAL Branch 
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair14" \
+    --use_gender $GENDER --extra_class_embed 8192 --extra_class_no 2 --gender_overall --additional_loss="kl_o_oid" --seed=$RUN_NO 
+# Gender CAL Branch 
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair14" \
+    --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_clothes --additional_loss="kl_o_oid" --seed=$RUN_NO 
+
+
+        
 
 
     
