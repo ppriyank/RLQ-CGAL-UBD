@@ -89,12 +89,12 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
 
 # Gender CAL Branch 
 BATCH_SIZE=28
-RUN_NO=2
+RUN_NO=4
 PORT=12351
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair14" \
     --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_clothes --additional_loss="kl_o_oid" --seed=$RUN_NO 
-# ==> Best Rank-1 41.3%, achieved at epoch 30. Best MaP 20.8%
+# ==> Best Rank-1 41.6%, achieved at epoch 30. Best MaP 20.8%
 
 # Gender CGAL Branch 
 BATCH_SIZE=28
@@ -108,7 +108,7 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
 ############################################################
 ###################### Distillation + Gender 
 BATCH_SIZE=28
-RUN_NO=2
+RUN_NO=1
 PORT=12353
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair14" \
