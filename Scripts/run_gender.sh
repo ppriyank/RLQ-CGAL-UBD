@@ -114,3 +114,4 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair14" \
     --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id \
     --additional_loss 'kl_o_oid' --unused_param --seed=$RUN_NO --dataset-specific 
+# ==> Best Rank-1 44.9%, achieved at epoch 60. Best MaP 21.8%

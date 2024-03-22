@@ -13,7 +13,6 @@ ltcc_v1=Helper/LTCC_Validation_1.csv
 ltcc_v2=Helper/LTCC_Validation_2.csv
 ltcc_v3=Helper/LTCC_Validation_3.csv
 
-
 Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
 R_LA_15_2_ABS_GID=logs/celeb_cc_colors/R_LA_15_2_ABS_GID/best_model.pth.tar
 
@@ -81,18 +80,18 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
 ############################################################
 ################### Gender + Pose  (CGAL)
 BATCH_SIZE=28
-RUN_NO=3
+RUN_NO=2
 PORT=12354
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint3_3" --batch_size $BATCH_SIZE --train_fn="2feats_pair23" \
     --class_2=16 --Pose=$POSE --pose-mode="R_LA_15" --overlap_2=-3 --additional_loss="Pose3_kl_o_oid" --unused_param \
     --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO --no-save 
-
+# ==> Best Rank-1 43.4%, achieved at epoch 30. Best MaP 21.1%
 
 ############################################################
 ################### RLQ (Celeb ReID Base Model)
 BATCH_SIZE=28
-RUN_NO=3
+RUN_NO=4
 PORT=12354
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size $BATCH_SIZE --train_fn="2feats_pair23" \

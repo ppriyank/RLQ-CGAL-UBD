@@ -7,10 +7,32 @@ Implementation of Coarse-grained Attribute Learning with Unsupervised Distillati
 Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
 R_LA_15_2_ABS_GID=logs/celeb_cc_colors/R_LA_15_2_ABS_GID/best_model.pth.tar
 ```
- - Please check [Scripts](Scripts/ucf2.sh) for running various models.  
+
 
 
 ## Inference 
+
+[Analysis](Scripts/analysis.sh) has scripts for various evaluations.
+Mainly RLQ can be evaluated, on datasets like `ltcc_cc_gender`, `prcc_cc_gender`, `last_cc_gender`. Code is dataset independent, just replace dataset argument to do desired inference.
+```
+NUM_GPU=2
+GPUS=0,1
+checkpoint='logs/ltcc_cc_gender/R_LA_15_B=32_1/best_model.pth.tar'
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU \
+  --master_port 12345 main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset ltcc_cc_gender \
+  --gpu $GPUS --output ./ --root $ltcc --image --class_2=16 --Pose=$ltcc_pose --pose-mode="R_LA_15" \ --overlap_2=-3 --use_gender $ltcc_gender --extra_class_embed 4096 --extra_class_no 2 --gender_id \
+  --backbone="resnet50_joint3_3" --tag output --resume $checkpoint --eval --no-classifier
+```
+
+
+## Training  
+
+Please check [Scripts](Scripts/) for running various models.  We have provided Scripts like : 
+[Vanilla CAL model](Scripts/run_CAL.sh), [Base Model](Scripts/run_basemodel.sh), [Gender Only](Scripts/run_gender.sh), [Pose Only](Scripts/run_Pose.sh), [RQL Model](Scripts/run_final.sh). 
+
+Most ablation reported in paper is an average of two runs, done on batch size 28 for LTCC and 32 & 40 for PRCC. Best performance for RQL model for LaST, DeepChange and LTCC is on Batch size 40, and 32 for PRCC.
+
+Code is dataset independent, just replace dataset argument to do desired training.
 
 ## Results 
 
