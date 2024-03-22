@@ -33,15 +33,17 @@ pip install diffusers==0.24.0 fastreid insightface onnxruntime
 ```
 
 ### timm dependency issues 
-on these paths 
+One of these paths : 
 ```
 vim ~/anaconda3/envs/rql/lib/python3.8/site-packages/torch/_six.py
 vim ~/.conda/envs/rql/lib/python3.6/site-packages/timm/models/layers/helpers.py
 vim ~/.local/lib/python3.7/site-packages/timm/models/layers/helpers.py
 vim ~/anaconda3/envs/rql/lib/python3.6/site-packages/timm/models/layers/helpers.py
 vim ~/my-envs/rql/lib/python3.8/site-packages/timm/models/layers/helpers.py
-
-// comment from torch._six import
-add:  import collections.abc as container_abcs
 ```
 
+`Comment` & `Reaplce`
+```
+from torch._six import
+import collections.abc as container_abcs
+```
