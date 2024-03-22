@@ -1,7 +1,7 @@
 # RLQ-CGAL-UBD
 Implementation of Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID
  - Please check [Setup](setup.md) for setting up requiste libraries.   
- - Download [Pretrained weights](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights)
+ - Download [Pretrained weights](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights) for inference and training RLQ (Celeb ReID weights)
  - Place Celeb ReID weights in `logs/` folder. Update the `Celeb_Wt_KL` and `R_LA_15_2_ABS_GID` in scripts such that : 
  ```
 Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
@@ -10,8 +10,25 @@ R_LA_15_2_ABS_GID=logs/celeb_cc_colors/R_LA_15_2_ABS_GID/best_model.pth.tar
  - Please check [Scripts](Scripts/ucf2.sh) for running various models.  
 
 
+## Inference 
 
-## Pre Processing 
+## Results 
+
+Results mentioned here are somewhat higher than whats reported in paper. Paper is actually an average of best two runs. Here are providing weights of the best run. 
+
+| RLQ             | Top 1 (CC) | mAP (CC) | Wts & Log |
+|-----------------|-------|------|-----------|
+| Celeb ReID      |  59.2 | 14.9 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/celeb_cc_colors.zip) | 
+| LTCC (Using CelebReID Base Model)  |  46.4 | 21.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
+| LTCC (Using CelebReID + Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
+| PRCC (Using CelebReID + Base Model)  | 65.1 | 63.8 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
+| LaST (Using CelebReID + Base Model)  | 77.9 | 35.3 | [Link](-) | 
+| DeepChange (Using CelebReID + Base Model)  | 57.8 | 21.8 | [Link](-) | 
+| DeepChange (Using CelebReID + Base Model)  | 58.8 | 22.1 | [Link](-) | 
+
+
+
+## Pre Processing (Train Only)
 All Pose Clusters and Gender related Information for each dataset is kept in [Scripts/Helper](Scripts/Helper). This folder also has a list of all RGB images where silhouttes are faulty, and size csv to get a size buckets images fall in.  
 
   - (**Provided**) Genders were manullay generated.   
@@ -29,20 +46,3 @@ All Pose Clusters and Gender related Information for each dataset is kept in [Sc
 | N_LA            | R_LA w/o resizing from 2d skeleton model output (code needs to be modified) |
 | N_LAC           | R_LAC w/o resizing from 2d skeleton model output (code needs to be modified)|
 | N_A             | R_A  w/o resizing from 2d skeleton model output (code needs to be modified) |
-|-----------------|-----------------------------------------------------------------------------|
-
-## Results 
-
-Results mentioned here are somewhat higher than whats reported in paper. Paper is actually an average of best two runs. Here are providing weights of the best run. 
-
-|-----------------|-------|------|-----------|
-| RLQ             | Top 1 (CC) | mAP (CC) | Wts & Log |
-|-----------------|-------|------|-----------|
-| Celeb ReID      |  59.2 | 14.9 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/CelebWts/celeb_cc_colors.zip) | 
-| LTCC (Using CelebReID Base Model)  |  46.4 | 21.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
-| LTCC (Using CelebReID + Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
-| PRCC (Using CelebReID + Base Model)  | 65.1 | 63.8 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
-| LaST (Using CelebReID + Base Model)  | 77.9 | 35.3 | [Link](-) | 
-| DeepChange (Using CelebReID + Base Model)  | 57.8 | 21.8 | [Link](-) | 
-| DeepChange (Using CelebReID + Base Model)  | 58.8 | 22.1 | [Link](-) | 
-|-----------------|--------------|

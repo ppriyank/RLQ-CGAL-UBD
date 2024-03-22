@@ -13,7 +13,8 @@ __factory = {
     'resnet50_joint2': ResNet50_JOINT2,
 
     'resnet50_joint3_3': ResNet50_JOINT3_3,   # Pose 
-
+    'resnet50_joint3_8': ResNet50_JOINT3_8,   
+    
 }
 
 

@@ -345,4 +345,43 @@ class ResNet50_JOINT3_3(ResNet50_JOINT3):
             return torch.cat([f1, f2],-1)
 
 
+# ResNet50_JOINT3_3 W/o POSE (training pose teacher)    
+class ResNet50_JOINT3_8(ResNet50_JOINT3_3):
+    def feature_generator(self,x):
+        if self.split_common:
+            for i,module in enumerate(self.common):
+                x = module(x)
+            f1 = self.branch1(x)
+            f2 = self.branch2(x)
+        elif self.split_branch:
+            x = self.common(x)
+            f1 = self.branch1(x)
+            for i,module in enumerate(self.branch2):
+                x = module(x)
+            f2 = x
+        else:
+            x = self.common(x)
+            f1 = self.branch1(x)
+            f2 = self.branch2(x)
+        return f1, f2
+    
+    def pooling(self,f1, f2, B):
+        f1 = self.globalpooling(f1)
+        f1 = f1.view(B, -1)
+        f1 = self.bn1(f1)
+
+        f2 = self.globalpooling(f2)
+        f2 = f2.view(B, -1)
+        f2 = self.bn2(f2)
+
+        return f1, f2
+
+    def forward(self, x):
+        f1, f2 = self.feature_generator(x)
+        B = x.size(0)
+        f1, f2  = self.pooling(f1, f2, B)
+        if self.teacher_mode:
+            return f1, f2
+        else:
+            return torch.cat([f1, f2],-1)
 
