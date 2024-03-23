@@ -27,6 +27,8 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
 
 ## Training  
 
+Seeds intialization is important. Performance changes a lot across seeds. Thus we recommend running experiments with 1,2,3,4 and reporting an average of best two runs. 
+
 Please check [Scripts](Scripts/) for running various models.  We have provided Scripts like : 
 [Vanilla CAL model](Scripts/run_CAL.sh), [Base Model](Scripts/run_basemodel.sh), [Gender Only](Scripts/run_gender.sh), [Pose Only](Scripts/run_Pose.sh), [RQL Model](Scripts/run_final.sh). 
 

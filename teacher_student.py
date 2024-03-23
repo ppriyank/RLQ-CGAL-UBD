@@ -196,28 +196,13 @@ def main(config, args):
             train_cal_pair3_ind_2feat(epoch=epoch, **params, **additional_args)
         elif config.TRAIN.FN == "2feats_pair14": # Baseline + Gender
             train_cal_pair14_ind_2feat(epoch=epoch, **params, **additional_args)
-
-
-
         elif config.TRAIN.FN == "2feats_pair16": # Baseline + Pose
             train_cal_pair16_ind_2feat(epoch=epoch, **params, **additional_args)
-        elif config.TRAIN.FN == "2feats_pair7": # Horizontal Splits 
-            train_cal_pair7_ind_2feat(epoch=epoch, **params, **additional_args)    
-        elif config.TRAIN.FN == "2feats_pair22": # Gender + Adv Sample
-            train_cal_pair22_ind_2feat(epoch=epoch, **params, **additional_args)    
         elif config.TRAIN.FN == "2feats_pair23": # Gender + Pose 
             train_cal_pair23_ind_2feat(epoch=epoch, **params, **additional_args)
-        elif config.TRAIN.FN == "2feats_pair24": # Gender + Pose + Body 
-            train_cal_pair24_ind_2feat(epoch=epoch, **params, **additional_args)
-        elif config.TRAIN.FN == "2feats_pair25": # Gender + Pose + Body 
-            train_cal_pair25_ind_2feat(epoch=epoch, **params, **additional_args)
-        elif config.TRAIN.FN == "2feats_pair28": # Baseline + Pose + Body (Class)
-            train_cal_pair28_ind_2feat(epoch=epoch, **params, **additional_args)
         elif config.TRAIN.FN == "2feats_pair27": # Baseline (Only CAL)
             assert config.TRAIN.ONLY_CAL 
             train_cal_pair27_ind_2feat()
-        
-        
         else:
             train_cal(epoch=epoch, **params, **additional_args)
         
