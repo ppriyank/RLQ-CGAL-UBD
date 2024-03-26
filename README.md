@@ -27,12 +27,12 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
 
 ## Training  
 
-Seeds intialization is important. Performance changes a lot across seeds. Thus we recommend running experiments with 1,2,3,4 and reporting an average of best two runs. 
+Seeds intialization and Batch size is important. Performance changes a lot across seeds. Thus we recommend running experiments with 1,2,3,4 and reporting an average of best two runs. 
 
 Please check [Scripts](Scripts/) for running various models.  We have provided Scripts like : 
 [Vanilla CAL model](Scripts/run_CAL.sh), [Base Model](Scripts/run_basemodel.sh), [Gender Only](Scripts/run_gender.sh), [Pose Only](Scripts/run_Pose.sh), [RQL Model](Scripts/run_final.sh). 
 
-Most ablation reported in paper is an average of two runs, done on batch size 28 for LTCC and 32 & 40 for PRCC. Best performance for RQL model for LaST, DeepChange and LTCC is on Batch size 40, and 32 for PRCC.
+Most ablation reported in paper is an average of two runs, done on batch size 28 for LTCC and 32 & 40 for PRCC. Best performance for RQL model for LaST, DeepChange is with Batch size 40, and LTCC is on Batch size 40 & 32, and 32 for PRCC.
 
 Code is dataset independent, just replace dataset argument to do desired training.
 
@@ -43,13 +43,12 @@ Results mentioned here are somewhat higher than whats reported in paper. Paper i
 | RLQ             | Top 1 (CC) | mAP (CC) | Wts & Log |
 |-----------------|-------|------|-----------|
 | Celeb ReID      |  59.2 | 14.9 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/celeb_cc_colors.zip) | 
-| LTCC (Using CelebReID Base Model)  |  46.4 | 21.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
-| LTCC (Using CelebReID + Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
+| LTCC (Using CelebReID Base Model)  |  46.4 | 21.5 / 21.9 | [Wt1](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) / [Wt2](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=5%20days%20ago-,RLQ_15_B.32_4.zip,-301%20MB) | 
+| LTCC (Using CelebReID + Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=R_LA_15_DS_NC_B.40_2_2.zip) | 
+| LTCC (Using CelebReID + Base Model) + 25 Pose Clusters (instead of 15) |  46.7 | 21.7 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/RLQ_25_B.32_1.zip) | 
 | PRCC (Using CelebReID + Base Model)  | 65.1 | 63.8 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
 | LaST (Using CelebReID + Base Model)  | 77.9 | 35.3 | [Link](-) | 
-| DeepChange (Using CelebReID + Base Model)  | 57.8 | 21.8 | [Link](-) | 
-| DeepChange (Using CelebReID + Base Model)  | 58.8 | 22.1 | [Link](-) | 
-
+| DeepChange (Using CelebReID + Base Model) (6 GPUs) | 59.2 | 22.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/deepchange_cc_gender.zip) | 
 
 
 ## Pre Processing (Train Only)

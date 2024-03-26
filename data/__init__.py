@@ -79,11 +79,15 @@ def build_img_transforms(config):
 
 
 
-def build_dataloader(config):
+def build_dataloader(config, local_rank=None):
     dataset = build_dataset(config)
     additional_args = {}
     additional_args["dataset_name"] = config.DATA.DATASET
     
+    data_loader_kwargs = {}
+    if local_rank is not None:
+        data_loader_kwargs["local_rank"] = local_rank
+
     # image dataset
     train_sampler = DistributedRandomIdentitySampler(dataset.train,  num_instances=config.DATA.NUM_INSTANCES,  seed=config.SEED)
     transform_train, transform_test = build_img_transforms(config)
@@ -152,33 +156,33 @@ def build_dataloader(config):
         trainloader = DataLoaderX(dataset=IMG_dataset_Teacher(dataset=dataset.train, transform=transform_train, train=True, **additional_args),
         # trainloader = DataLoaderX(dataset=IMG_dataset_Teacher(dataset=(dataset.train + dataset.gallery + dataset.query), transform=transform_train, train=True, **additional_args),
             sampler=train_sampler, batch_size=config.DATA.TRAIN_BATCH, num_workers=config.DATA.NUM_WORKERS,
-            pin_memory=True, drop_last=True)
+            pin_memory=True, drop_last=True, **data_loader_kwargs)
         queryloader, galleryloader = None, None
     else:
         trainloader = DataLoaderX(dataset=IMG_dataset(dataset=dataset.train, transform=transform_train, train=True, **additional_args),
                                 sampler=train_sampler,
                                 batch_size=config.DATA.TRAIN_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                pin_memory=True, drop_last=True, worker_init_fn=worker_init_fn)
+                                pin_memory=True, drop_last=True, worker_init_fn=worker_init_fn, **data_loader_kwargs)
         galleryloader = DataLoaderX(dataset=IMG_dataset(dataset=dataset.gallery, transform=transform_test, train=False, **additional_args),
                                 sampler=DistributedInferenceSampler(dataset.gallery),
                                 batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                pin_memory=True, drop_last=False, shuffle=False)
+                                pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
         if 'prcc' in config.DATA.DATASET :
             queryloader_same = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query_same, transform=transform_test, train=False, **additional_args),
                                     sampler=DistributedInferenceSampler(dataset.query_same),
                                     batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                    pin_memory=True, drop_last=False, shuffle=False)
+                                    pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
             queryloader_diff = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query_diff, transform=transform_test, train=False, **additional_args),
                                     sampler=DistributedInferenceSampler(dataset.query_diff),
                                     batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                    pin_memory=True, drop_last=False, shuffle=False)
+                                    pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
 
             return trainloader, [queryloader_same, queryloader_diff], galleryloader, dataset, train_sampler
         else:
             queryloader = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query, transform=transform_test, train=False, **additional_args),
                                     sampler=DistributedInferenceSampler(dataset.query),
                                     batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                    pin_memory=True, drop_last=False, shuffle=False)
+                                    pin_memory=True, drop_last=False, shuffle=False , **data_loader_kwargs)
 
     return trainloader, queryloader, galleryloader, dataset, train_sampler
 
