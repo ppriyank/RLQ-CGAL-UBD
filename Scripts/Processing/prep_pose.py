@@ -518,75 +518,6 @@ def cluster_body_pose_test2(root, src=None, dest=None, categories = ['train'], t
             Norm_Vec_list, Norm_Vec_Cooridnates_list, Norm_Only_Angle_list, 
             n_cluster, df, Null_Label, dataset)
   
-# MeVID
-def cluster_body_pose3(csv, root, src=None, dest=None, threshold=0.995, viz=None, n_cluster=-1, dataset=None, format="jpg", print_total_count=10):
-    df = pd.read_csv(csv, names=["ID", "Path"], dtype=str)
-    people = set(df.ID)
-    image_names = []
-    faulty = 0 
-    category = "bbox_train"
-    Resized_Vec_list, Resized_Vec_Cooridnates_list, Resized_Only_Angle_list = [],[],[]
-    Norm_Vec_list, Norm_Vec_Cooridnates_list, Norm_Only_Angle_list = [],[],[]
-    faulty = []
-    print_count = 0 
-    for person in people:
-        people = os.listdir(root)
-        person_path = os.path.join(root, person)
-        images=  list(df[df.ID == person].Path)
-        for img_name in images:
-            pickle_path = os.path.join(person_path, img_name)[:-4]
-            identifier = person + "/" + img_name[:-4]
-            if not os.path.exists( pickle_path + ".pkl" ):
-                faulty.append(person + "/" + img_name[:-4])
-            else:
-                rgb_image = os.path.join(src, category, identifier + f".{format}")
-                rgb_image = Image.open(rgb_image).convert('RGB')
-                width,height = rgb_image.size
-                original_dim = (width,height)
-
-                coordinates, resize_cordinate, normalized_cood = process_coordinates(pickle_path, resize_dim, original_dim)
-                if coordinates is None:
-                    faulty.append( identifier )
-                    continue 
-                image_names.append( identifier )
-                if random.random() > threshold and viz:
-                    print_count += 1
-                    draw_image(rgb_image, coordinates, img_name, l_pair, resize_dim , resize_cordinate, dataset)
-                    # img_name = "WO_LINE_" + img_name
-                    # draw_image(rgb_image, coordinates, img_name, l_pair, resize_dim , resize_cordinate, dataset, draw_without_line=True)
-                    if print_count == print_total_count:
-                        quit()
-                
-                Resized_Vec, Resized_Vec_Cooridnates, Resized_Only_Angle, Norm_Vec, Norm_Vec_Cooridnates, Norm_Only_Angle = vectorize_coorindates(coordinates, resize_cordinate, normalized_cood, l_pair)
-                
-                Resized_Vec_list.append(Resized_Vec)
-                Resized_Vec_Cooridnates_list.append(Resized_Vec_Cooridnates)
-                Resized_Only_Angle_list.append(Resized_Only_Angle)
-                Norm_Vec_list.append(Norm_Vec)
-                Norm_Vec_Cooridnates_list.append(Norm_Vec_Cooridnates)
-                Norm_Only_Angle_list.append(Norm_Only_Angle)
-                
-    Resized_Vec_list = np.array(Resized_Vec_list)
-    Resized_Vec_Cooridnates_list = np.array(Resized_Vec_Cooridnates_list)
-    Resized_Only_Angle_list = np.array(Resized_Only_Angle_list)
-
-    Norm_Vec_list = np.array(Norm_Vec_list)
-    Norm_Vec_Cooridnates_list = np.array(Norm_Vec_Cooridnates_list)
-    Norm_Only_Angle_list = np.array(Norm_Only_Angle_list)
-
-    import pdb
-    pdb.set_trace()
-                
-    df = pd.DataFrame([], columns = ["Category" , "Image"]) 
-    df["Image"] = image_names + faulty
-    df["Category"] = category
-    Null_Label = np.zeros(len(faulty))
-    
-    print(f"Faulty : {faulty}")
-    return clustering(Resized_Vec_list, Resized_Vec_Cooridnates_list, Resized_Only_Angle_list, 
-            Norm_Vec_list, Norm_Vec_Cooridnates_list, Norm_Only_Angle_list, 
-            n_cluster, df, Null_Label, dataset)
-    
 
 
 
@@ -636,16 +567,6 @@ if __name__ == "__main__":
     # df = cluster_body_pose2(root=last_pose, src=last, categories = ['train'], threshold=0.5, viz=None, n_cluster=[5,10,15,20,25,30,35,40], dataset=dataset)
     # df.to_csv(f"Scripts/Helper/{dataset}_Pose_Cluster.csv", index=False,) 
 
-    # MeVID
-    mevid="/home/c3-0/datasets/MEVID/"
-    mevid_pose="/home/c3-0/datasets/MEVID_Mask_Pose/Train_Pose/"
-    dataset="MeVID"
-    mevid_csv_file="Scripts/Helper/MeVID_Train.csv"
-    df = cluster_body_pose3(csv=mevid_csv_file, root=mevid_pose, src=mevid, threshold=0.5, viz=None, n_cluster=[5,10,15,20,25,30,35,40], dataset=dataset)
-    df.to_csv(f"Scripts/Helper/{dataset}_Pose_Cluster.csv", index=False,) 
-    # rsync Scripts/Helper/MeVID_Pose_Cluster.csv  ucf2:~/CCReID/Scripts/Helper/
-    # rsync MeVID_knee_plt.png  ucf2:~/CCReID/Scripts/Helper/
-    
 
 # srun --pty --qos=day --cpus-per-task=8 bash
 # cd ~/CCReID/

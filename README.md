@@ -1,7 +1,8 @@
 # RLQ-CGAL-UBD
 Implementation of Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID
  - Please check [Setup](setup.md) for setting up requiste libraries.   
- - Download [Pretrained weights](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights) for inference and training RLQ (Celeb ReID weights)
+ - Download [Pretrained weights](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights) for inference and training RLQ (Celeb ReID weights).
+ - Logs with pretrained weights will provide configuration details like Batch Size, Seed, etc. 
  - Place Celeb ReID weights in `logs/` folder. Update the `Celeb_Wt_KL` and `R_LA_15_2_ABS_GID` in scripts such that : 
  ```
 Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
@@ -42,12 +43,13 @@ Results mentioned here are somewhat higher than whats reported in paper. Paper i
 
 | RLQ             | Top 1 (CC) | mAP (CC) | Wts & Log |
 |-----------------|-------|------|-----------|
-| Celeb ReID      |  59.2 | 14.9 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/celeb_cc_colors.zip) | 
+| Celeb ReID Base Model |  58.1 | 14.2 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/celeb.zip) | 
+| Celeb ReID Base Model + CGAL    |  59.2 | 14.9 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/celeb_cc_colors.zip) | 
 | LTCC (Using CelebReID Base Model)  |  46.4 | 21.5 / 21.9 | [Wt1](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) / [Wt2](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=5%20days%20ago-,RLQ_15_B.32_4.zip,-301%20MB) | 
-| LTCC (Using CelebReID + Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=R_LA_15_DS_NC_B.40_2_2.zip) | 
-| LTCC (Using CelebReID + Base Model) + 25 Pose Clusters (instead of 15) |  46.7 | 21.7 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/RLQ_25_B.32_1.zip) | 
-| PRCC (Using CelebReID + Base Model)  | 65.1 | 63.8 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
-| LaST (Using CelebReID + Base Model)  | 77.9 | 35.3 | [Link](-) | 
+| LTCC (Using CelebReID Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=R_LA_15_DS_NC_B.40_2_2.zip) | 
+| LTCC (Using CelebReID Base Model) + 25 Pose Clusters (instead of 15) |  46.7 | 21.7 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/RLQ_25_B.32_1.zip) | 
+| PRCC (Using CelebReID Base Model)  | 65.1 | 63.8 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
+| LaST (Using CelebReID Base Model)  | 77.9 | 35.3 | [Link](-) | 
 | DeepChange (Using CelebReID + Base Model) (6 GPUs) | 59.2 | 22.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/deepchange_cc_gender.zip) | 
 
 

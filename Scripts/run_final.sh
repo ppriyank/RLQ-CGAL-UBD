@@ -97,31 +97,7 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
     --class_2=26 --Pose=$POSE --pose-mode="R_LA_25" --overlap_2=-3 --additional_loss="Pose3_kl_o_oid" --unused_param \
     --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO --no-save 
 
-
-################### RLQ (Celeb ReID Base Model)
-############ POSE Cluster Variations ############
-# R_LA_15 # 15 clusters
-BATCH_SIZE=32
-RUN_NO=4
-CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
-    --gpu $GPUS --output ./ --tag RLQ_15_"B=$BATCH_SIZE"_"$RUN_NO" --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size $BATCH_SIZE --train_fn="2feats_pair23" \
-    --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --KL_weights "[0,0,1,1,1]" --MSE_weights "[1,1,1,1]" --CA_weight 0 \
-    --class_2=16 --Pose=$POSE --pose-mode="R_LA_15" --overlap_2=-3 --additional_loss="Pose3_kl_o_oid" --unused_param \
-    --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO --dataset-specific --no-save 
-# ==> Best Rank-1 46.4%, achieved at epoch 40. Best MaP 21.9%    
-
-# R_LA_25 # 25 clusters
-BATCH_SIZE=32
-RUN_NO=1
-CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
-    --gpu $GPUS --output ./ --tag RLQ_25_"B=$BATCH_SIZE"_"$RUN_NO" --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size $BATCH_SIZE --train_fn="2feats_pair23" \
-    --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --KL_weights "[0,0,1,1,1]" --MSE_weights "[1,1,1,1]" --CA_weight 0 \
-    --class_2=26 --Pose=$POSE --pose-mode="R_LA_25" --overlap_2=-3 --additional_loss="Pose3_kl_o_oid" --unused_param \
-    --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO --dataset-specific --no-save 
-# ==> Best Rank-1 46.7%, achieved at epoch 60. Best MaP 21.7%
-
-
-################### RLQ (Celeb ReID Base Model + CGAL )
+################### RLQ (Celeb ReID Base Model + CGAL ) [will need to train a Celeb Teacher model for this]
 # R_LA_15 # 15 clusters
 BATCH_SIZE=28
 RUN_NO=1
@@ -138,3 +114,31 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
     --gpu $GPUS --output ./ --tag NC_RLQ_25_"B=$BATCH_SIZE"_"$RUN_NO" --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --teacher-diff "resnet50_joint3_8" --backbone="resnet50_joint3_3" --batch_size $BATCH_SIZE --train_fn="2feats_pair23" \
     --teacher_wt $R_LAC_25_CGAL --teacher_dataset celeb --teacher_dir $celeb --class_2=26 --Pose=$POSE --pose-mode="R_LA_25" --overlap_2=-3 --additional_loss="Pose3_kl_o_oid" --unused_param \
     --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO --dataset-specific --T-P-G --no-save >> outputs/RLQ_NC_25_"B=$BATCH_SIZE"_"$RUN_NO".txt 
+
+
+################### RLQ (Celeb ReID Base Model)
+############ POSE Cluster Variations ############
+# R_LA_15 # 15 clusters
+BATCH_SIZE=32
+RUN_NO=4
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --tag RLQ_15_"B=$BATCH_SIZE"_"$RUN_NO" --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size $BATCH_SIZE --train_fn="2feats_pair23" \
+    --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --KL_weights "[0,0,1,1,1]" --MSE_weights "[1,1,1,1]" --CA_weight 0 \
+    --class_2=16 --Pose=$POSE --pose-mode="R_LA_15" --overlap_2=-3 --additional_loss="Pose3_kl_o_oid" --unused_param \
+    --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO --dataset-specific --no-save 
+# ==> Best Rank-1 46.4%, achieved at epoch 40. Best MaP 21.9%
+# PRCC : BATCH_SIZE=40, RUN_NO=1
+# ==> Best Rank-1 65.1%, achieved at epoch 20. Best MaP 63.8%
+
+# R_LA_25 # 25 clusters
+BATCH_SIZE=32
+RUN_NO=1
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --tag RLQ_25_"B=$BATCH_SIZE"_"$RUN_NO" --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size $BATCH_SIZE --train_fn="2feats_pair23" \
+    --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --KL_weights "[0,0,1,1,1]" --MSE_weights "[1,1,1,1]" --CA_weight 0 \
+    --class_2=26 --Pose=$POSE --pose-mode="R_LA_25" --overlap_2=-3 --additional_loss="Pose3_kl_o_oid" --unused_param \
+    --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO --dataset-specific --no-save 
+# ==> Best Rank-1 46.7%, achieved at epoch 60. Best MaP 21.7%
+# PRCC : BATCH_SIZE=40, RUN_NO=3
+# ==> Best Rank-1 63.4%, achieved at epoch 20. Best MaP 61.8%
+
