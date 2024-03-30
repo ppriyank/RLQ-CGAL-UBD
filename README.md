@@ -1,14 +1,16 @@
 # RLQ-CGAL-UBD
 Implementation of **Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID** [Arxiv]() 
- - Please check [Setup](setup.md) for setting up requiste libraries.   
- - Download [Pretrained weights](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights) for inference and training RLQ (Celeb ReID weights).
- - Logs with pretrained weights will provide configuration details like Batch Size, Seed, etc. 
- - Place Celeb ReID weights in `logs/` folder. Update the `Celeb_Wt_KL` and `R_LA_15_2_ABS_GID` in scripts such that : 
- ```
-Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
-R_LA_15_2_ABS_GID=logs/celeb_cc_colors/R_LA_15_2_ABS_GID/best_model.pth.tar
-```
-
+ 
+### Table of Contents 
+* **[Cite](#citation)**<br>  
+* **[Setup](setup.md)**<br>
+* **[ALL Pretrained weights](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights)** <br>
+  * Inference & training RLQ (Celeb ReID weights) 
+  * Logs with pretrained weights will provide configuration details like Batch Size, Seed, etc. 
+* **[Inference](#inference)**<br>  
+* **[Results](#results)**<br>  
+* **[Training](#training)**<br>  
+* **[Visualization](#visualization)**<br>  
 
 
 ## Inference 
@@ -26,17 +28,6 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
 ```
 
 
-## Training  
-
-Seeds intialization and Batch size is important. Performance changes a lot across seeds. Thus we recommend running experiments with 1,2,3,4 and reporting an average of best two runs. 
-
-Please check [Scripts](Scripts/) for running various models.  We have provided Scripts like : 
-[Vanilla CAL model](Scripts/run_CAL.sh), [Base Model](Scripts/run_basemodel.sh), [Gender Only](Scripts/run_gender.sh), [Pose Only](Scripts/run_Pose.sh), [RQL Model](Scripts/run_final.sh). 
-
-Most ablation reported in paper is an average of two runs, done on batch size 28 for LTCC and 32 & 40 for PRCC. Best performance for RQL model for LaST, DeepChange is with Batch size 40, and LTCC is on Batch size 40 & 32, and 32 for PRCC.
-
-Code is dataset independent, just replace dataset argument to do desired training.
-
 ## Results 
 
 Results mentioned here are somewhat higher than whats reported in paper. Paper is actually an average of best two runs. Here are providing weights of the best run. 
@@ -53,7 +44,25 @@ Results mentioned here are somewhat higher than whats reported in paper. Paper i
 | DeepChange (Using CelebReID + Base Model) (6 GPUs) | 59.2 | 22.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/deepchange_cc_gender.zip) | 
 
 
-## Pre Processing (Train Only)
+
+## Training  
+
+Place Celeb ReID weights in `logs/` folder. Update the `Celeb_Wt_KL` and `R_LA_15_2_ABS_GID` in scripts such that : 
+ ```
+Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
+R_LA_15_2_ABS_GID=logs/celeb_cc_colors/R_LA_15_2_ABS_GID/best_model.pth.tar
+```
+
+Seeds intialization and Batch size is important. Performance changes a lot across seeds. Thus we recommend running experiments with 1,2,3,4 and reporting an average of best two runs. 
+
+Please check [Scripts](Scripts/) for running various models.  We have provided Scripts like : 
+[Vanilla CAL model](Scripts/run_CAL.sh), [Base Model](Scripts/run_basemodel.sh), [Gender Only](Scripts/run_gender.sh), [Pose Only](Scripts/run_Pose.sh), [RQL Model](Scripts/run_final.sh). 
+
+Most ablation reported in paper is an average of two runs, done on batch size 28 for LTCC and 32 & 40 for PRCC. Best performance for RQL model for LaST, DeepChange is with Batch size 40, and LTCC is on Batch size 40 & 32, and 32 for PRCC.
+
+Code is dataset independent, just replace dataset argument to do desired training.
+
+### Pre Processing (Train Only)
 All Pose Clusters and Gender related Information for each dataset is kept in [Scripts/Helper](Scripts/Helper). This folder also has a list of all RGB images where silhouttes are faulty, and size csv to get a size buckets images fall in.  
 
   - (**Provided**) Genders were manullay generated.   
