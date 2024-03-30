@@ -1,5 +1,5 @@
 # RLQ-CGAL-UBD
-Implementation of Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID
+Implementation of **Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID** [Arxiv]() 
  - Please check [Setup](setup.md) for setting up requiste libraries.   
  - Download [Pretrained weights](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights) for inference and training RLQ (Celeb ReID weights).
  - Logs with pretrained weights will provide configuration details like Batch Size, Seed, etc. 
@@ -49,7 +49,7 @@ Results mentioned here are somewhat higher than whats reported in paper. Paper i
 | LTCC (Using CelebReID Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=R_LA_15_DS_NC_B.40_2_2.zip) | 
 | LTCC (Using CelebReID Base Model) + 25 Pose Clusters (instead of 15) |  46.7 | 21.7 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/RLQ_25_B.32_1.zip) | 
 | PRCC (Using CelebReID Base Model)  | 65.1 | 63.8 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
-| LaST (Using CelebReID Base Model)  | 77.9 | 35.3 | [Link](-) | 
+| LaST (Using CelebReID Base Model)  (4 GPUs) | 77.9 | 35.3 | [Link](https://drive.google.com/file/d/1whiANkxRW9lo4HhpHZYminjVkviOE6_D/view?usp=sharing) | 
 | DeepChange (Using CelebReID + Base Model) (6 GPUs) | 59.2 | 22.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/deepchange_cc_gender.zip) | 
 
 
@@ -71,3 +71,33 @@ All Pose Clusters and Gender related Information for each dataset is kept in [Sc
 | N_LA            | R_LA w/o resizing from 2d skeleton model output (code needs to be modified) |
 | N_LAC           | R_LAC w/o resizing from 2d skeleton model output (code needs to be modified)|
 | N_A             | R_A  w/o resizing from 2d skeleton model output (code needs to be modified) |
+
+
+### Visualization 
+
+#### Pose Clusters (Train Only)
+
+<img src="PaperContent/p1.png" width="1500">
+<img src="PaperContent/p2.png" width="1500">
+<img src="PaperContent/p3.png" width="1500">
+
+#### Synthetic LQ images (Train Only)
+
+<img src="PaperContent/slq.png" width="1200">
+
+#### UBD (Train Only)
+
+<img src="PaperContent/ubd.png" width="1600">
+
+# Citation
+If you like our work, please consider citing us: 
+
+```
+@article{,
+  title={Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID},
+  author={Pathak, Priyank and Rawat, Yogesh S},
+  journal={ArXiv},
+  year={2024},
+  volume={ }
+}
+```
