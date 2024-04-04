@@ -36,12 +36,17 @@ Results mentioned here are somewhat higher than whats reported in paper. Paper i
 |-----------------|-------|------|-----------|
 | Celeb ReID Base Model |  58.1 | 14.2 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/celeb.zip) | 
 | Celeb ReID Base Model + CGAL    |  59.2 | 14.9 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/celeb_cc_colors.zip) | 
+| | | | |
 | LTCC (Using CelebReID Base Model)  |  46.4 | 21.5 / 21.9 | [Wt1](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) / [Wt2](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=5%20days%20ago-,RLQ_15_B.32_4.zip,-301%20MB) | 
 | LTCC (Using CelebReID Base Model + CGAL)  |  46.7 | 22.0 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/tag/Pre-trainedWeights#:~:text=R_LA_15_DS_NC_B.40_2_2.zip) | 
 | LTCC (Using CelebReID Base Model) + 25 Pose Clusters (instead of 15) |  46.7 | 21.7 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/RLQ_25_B.32_1.zip) | 
+| | | | |
 | PRCC (Using CelebReID Base Model)  | 65.1 | 63.8 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/R_LA_15_B.32_1.zip) | 
+| | | | |
 | LaST (Using CelebReID Base Model)  (4 GPUs) | 77.9 | 35.3 | [Link](https://drive.google.com/file/d/1whiANkxRW9lo4HhpHZYminjVkviOE6_D/view?usp=sharing) | 
+| | | | |
 | DeepChange (Using CelebReID + Base Model) (6 GPUs) | 59.2 | 22.5 | [Link](https://github.com/ppriyank/RLQ-CGAL-UBD/releases/download/Pre-trainedWeights/deepchange_cc_gender.zip) | 
+| | | | |
 
 
 
