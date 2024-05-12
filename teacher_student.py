@@ -39,6 +39,9 @@ def additional_argument(parser):
     parser.add_argument('--teacher-diff', type=str, default=None)
     parser.add_argument('--unused_param', action='store_true')
     parser.add_argument('--T-P-G', action='store_true')
+
+    parser.add_argument('--sampling', type=int, default=None)
+
     
     return parser
 
@@ -52,7 +55,12 @@ def main(config, args):
         config.MODEL.NAME = args.teacher_diff
     config.freeze()
     
-    trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config)
+
+    if args.sampling:
+        print(" ... USING SAMPLED TEACHER SET .... ")
+        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, args.sampling)
+    else:
+        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, )
     modify_config(config, dataset_teacher)
     
     teacher_model, teacher_classifier, teacher_clothes_classifier = build_model(config, dataset_teacher.num_train_pids, dataset_teacher.num_train_clothes)

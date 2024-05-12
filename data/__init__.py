@@ -79,7 +79,7 @@ def build_img_transforms(config):
 
 
 
-def build_dataloader(config, local_rank=None):
+def build_dataloader(config, local_rank=None, sampling = None ):
     dataset = build_dataset(config)
     additional_args = {}
     additional_args["dataset_name"] = config.DATA.DATASET
@@ -90,6 +90,8 @@ def build_dataloader(config, local_rank=None):
 
     # image dataset
     train_sampler = DistributedRandomIdentitySampler(dataset.train,  num_instances=config.DATA.NUM_INSTANCES,  seed=config.SEED)
+    if sampling:
+        train_sampler = DistributedRandomIdentitySampler_Percent(dataset.train,  percent=sampling, num_instances=config.DATA.NUM_INSTANCES,  seed=config.SEED)
     transform_train, transform_test = build_img_transforms(config)
     IMG_dataset = ImageDataset
     if config.EVAL_MODE:

@@ -324,6 +324,51 @@ def train_cal_pair3_ind_2feat(config, epoch, model, classifier, clothes_classifi
     print_logs(logger, epoch, batch_time, data_time, metric_class.batch_cla_loss, metric_class.batch_pair_loss,
         metric_class.batch_clo_loss, metric_class.batch_adv_loss, metric_class.corrects, metric_class.clothes_corrects)
 
+# train_cal_pair3_ind_2feat 
+def train_cal_pair4_ind_2feat(config, epoch, model, classifier, clothes_classifier, criterion_cla, criterion_pair, 
+    criterion_clothes, criterion_adv, optimizer, optimizer_cc, trainloader, pid2clothes, criteria_feat_mse, criteria_logit_KL, 
+    extra_loss=None, single_data=False, extra_classifier=None):
+    logger = logging.getLogger('reid.train')
+    
+    metric_class = Stats2(keys=["id", "tri"])
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+
+    model.train()
+    
+    end = time.time()
+
+    HANDLE_DATA = handle_replica_data
+    if single_data:
+        HANDLE_DATA = handle_single_data
+
+    for batch_idx, (imgs, pids, camids, clothes_ids) in enumerate(trainloader):
+        # Get all positive clothes classes (belonging to the same identity) for each sample
+
+        imgs, pids, clothes_ids, pos_mask, B, N_replicas  = HANDLE_DATA(imgs, pids, clothes_ids, pid2clothes, )
+        # print(imgs.shape, pids, clothes_ids.shape, pos_mask.shape, B, N_replicas)
+        # Measure data loading time
+        data_time.update(time.time() - end)
+        # Forward
+        features_id, outputs = model(imgs)
+        _, preds = torch.max(outputs.data, 1)
+
+        # Compute loss
+        cla_loss = criterion_cla(outputs, pids)
+        
+        kwargs = {}
+        pair_loss, adv_loss, loss = compute_loss(criterion_pair, None, features_id, pids, None, clothes_ids, pos_mask,
+            epoch, config.TRAIN.START_EPOCH_ADV, config.LOSS.PAIR_LOSS_WEIGHT, cla_loss, optimizer, **kwargs)
+
+        metric_class.update(batch_size=pids.size(0), loss_dict=dict(id = cla_loss, tri=pair_loss))
+
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+    
+    logger.info('Epoch{0} \t'  'Time:{batch_time.sum:.1f}s \t' 'Data:{data_time.sum:.1f}s \t' 'Tri:{TRI.avg:.4f} \t' 'ID Loss:{id_loss.avg:.4f}'.format(  epoch+1, batch_time=batch_time, data_time=data_time,  TRI=metric_class.metrics["tri"],  id_loss=metric_class.metrics["id"]))
+    model.module.student_mode = False
+    
 
 ########### Gender ###########
 # train_cal_pair3_ind_2feat (overall gender)
