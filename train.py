@@ -584,6 +584,73 @@ def train_cal_pair9_ind_2feat(config, epoch, model, classifier, clothes_classifi
                 epoch+1, batch_time=batch_time, data_time=data_time,  MSE=metric_class.metrics["mse"],  kl_loss=metric_class.metrics["KL"]))
     model.module.student_mode = False
 
+# UBD - Teacher 
+def train_cal_pair10_ind_2feat(config, epoch, model, classifier, clothes_classifier, criterion_cla, optimizer,
+    trainloader_teacher=None, teacher_model=None, teacher_classifier=None, teacher_id_classifier=None, criteria_DL_mse=None, criteria_DL_KL=None, **kwargs):
+    logger = logging.getLogger('reid.train')
+    
+    metric_class = Stats2(keys=["mse", "KL"])
+    batch_time = AverageMeter()
+    data_time = AverageMeter()
+
+    model.train()
+    classifier.train()
+    clothes_classifier.train()
+    end = time.time()
+
+    model.module.student_mode = True
+    
+    for batch_idx, (img_HR, pids, camids, _, img_LR) in enumerate(trainloader_teacher):
+        B = img_HR.shape[0]
+        img_HR, pids, img_LR = img_HR.cuda(), pids.cuda(), img_LR.cuda()
+        HR_LR = torch.cat([img_HR, img_LR])
+        # save_image(HR_LR, "hr_lr.png")
+        # Get all positive clothes classes (belonging to the same identity) for each sample
+        # Measure data loading time
+        data_time.update(time.time() - end)
+        # Forward
+        
+        with torch.autograd.set_detect_anomaly(True):
+            features_clothes_Student, features_id_Student, outputs_id_Student = model(HR_LR)
+            outputs_student = classifier(features_clothes_Student)
+            pred_clothes = clothes_classifier(features_clothes_Student.detach())
+
+        features_clothes_Student_HR, features_clothes_Student_LR  = features_clothes_Student[:B], features_clothes_Student[B:]
+        features_id_Student_HR, features_id_Student_LR = features_id_Student[:B], features_id_Student[B:]
+        outputs_id_Student_HR, outputs_id_Student_LR = outputs_id_Student[:B], outputs_id_Student[B:]
+        outputs_student_HR, outputs_student_LR = outputs_student[:B] , outputs_student[B:]
+        pred_clothes_HR, pred_clothes_LR = pred_clothes[:B] , pred_clothes[B:]
+
+        # Compute MSE Loss
+        mse1 = criteria_DL_mse(features_clothes_Student_HR, features_clothes_Student_LR)
+        mse3 = criteria_DL_mse(features_id_Student_HR, features_id_Student_LR)
+        MSE = mse1 + mse3
+        
+        # Compute KL Loss
+        kl3 = criteria_DL_KL(outputs_id_Student_HR, outputs_id_Student_LR)
+        kl4 = criteria_DL_KL(outputs_student_HR, outputs_student_LR)
+        kl5 = criteria_DL_KL(pred_clothes_HR, pred_clothes_LR)
+        KL = kl3 + kl4 + kl5
+
+        # Compute Total loss
+        loss = MSE + KL
+        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        metric_class.update(batch_size=pids.size(0), loss_dict=dict(mse = MSE, KL=KL))
+        
+        # measure elapsed time
+        batch_time.update(time.time() - end)
+        end = time.time()
+    
+    logger.info('Epoch{0} \t'  'Time:{batch_time.sum:.1f}s \t' 'Data:{data_time.sum:.1f}s \t'
+                  'MSE:{MSE.avg:.4f} \t' 'KLLoss:{kl_loss.avg:.4f}'.format( 
+                epoch+1, batch_time=batch_time, data_time=data_time,  MSE=metric_class.metrics["mse"],  kl_loss=metric_class.metrics["KL"]))
+    model.module.student_mode = False
+
+
 ########### POSE  ###########
 # soft triplet (baseline) + Pose Branch
 def train_cal_pair16_ind_2feat(config, epoch, model, classifier, clothes_classifier, criterion_cla, criterion_pair, 

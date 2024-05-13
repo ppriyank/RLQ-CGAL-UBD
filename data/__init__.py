@@ -4,7 +4,7 @@ import data.temporal_transforms as TT
 from torch.utils.data import DataLoader
 from data.dataloader import DataLoaderX
 from data.dataset_loader import *
-from data.samplers import DistributedRandomIdentitySampler, DistributedInferenceSampler
+from data.samplers import DistributedRandomIdentitySampler, DistributedInferenceSampler, DistributedRandomIdentitySampler_Percent
 
 from data.datasets.ltcc import *
 from .datasets.celebreid import *

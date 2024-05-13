@@ -218,8 +218,12 @@ class DistributedRandomIdentitySampler_Percent(DistributedRandomIdentitySampler)
         self.percent = percent
         # compute number of examples in an epoch
         self.length = 0
-        
-        for pid in random.sample(self.pids,  int(self.num_identities * self.percent / 100 )   ):
+                # selected_pid = self.pids[ :int(self.num_identities * self.percent / 100 ) ]
+        # selected_pid = random.sample(self.pids, int(self.num_identities * self.percent / 100 )     )
+
+        selected_pid = sorted(self.pids, key = lambda pid: len(self.index_dic[pid]))
+        selected_pid=  selected_pid[: int(self.num_identities * self.percent / 100 )]
+        for pid in selected_pid:
             idxs = self.index_dic[pid]
             num = len(idxs)
             if num < self.num_instances:
