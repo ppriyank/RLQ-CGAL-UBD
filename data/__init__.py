@@ -104,6 +104,9 @@ def build_dataloader(config, local_rank=None, sampling = None ):
         additional_args["sil_mode"] = config.DATA.SIL_MODE
         additional_args["clothes_dict"] = dataset.clothes_dict
     
+    if config.DATA.LR_MODE_W_SIL:
+        IMG_dataset = ImageDataset_w_sil_with_lr_aug
+        
     if config.DATA.LR_MODE:
         IMG_dataset = ImageDataset_w_res
         if config.DATA.LR_TYPE:

@@ -43,7 +43,8 @@ def additional_argument(parser):
     parser.add_argument('--sampling', type=int, default=None)
     parser.add_argument('--no-teacher', action='store_true')
 
-    
+    parser.add_argument('--mse-ss', action='store_true')
+    parser.add_argument('--no-mse', action='store_true')
     return parser
 
 def main(config, args):
@@ -193,10 +194,14 @@ def main(config, args):
         if not args.Debug:
             if config.TRAIN.ONLY_CAL:
                 train_cal_pair26_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
+            elif args.no_teacher & args.no_mse:
+                train_cal_pair12_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
             elif args.no_teacher:
                 train_cal_pair10_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
             elif "T_P_G" in args and args.T_P_G and config.MODEL.NAME == "resnet50_joint3_5":
                 train_cal_pair30_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
+            elif args.mse_ss:
+                train_cal_pair11_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
             else:    
                 train_cal_pair9_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
                 # train_cal_pair9_ind_2feat2(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    

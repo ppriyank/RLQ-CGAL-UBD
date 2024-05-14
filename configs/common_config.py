@@ -16,6 +16,7 @@ _F.DATA.POSE_MODE=None
 _F.DATA.LR_MODE = None
 _F.DATA.LR_TYPE = None
 _F.DATA.DATASET_SPECIFIC = None
+_F.DATA.LR_MODE_W_SIL = None
 # sampler
 
 _F.AUG = CN()
@@ -187,7 +188,9 @@ def common_update_config_via_args(config, args):
         config.TRAIN.POSE_CL = True
     if args.pose_both:
         config.TRAIN.POSE_BOTH = True
-    
+    if args.lr_aug:
+        config.DATA.LR_MODE_W_SIL = True 
+
     #### Loss
     if args.pair_loss:
         config.LOSS.PAIR_LOSS = args.pair_loss

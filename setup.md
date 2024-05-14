@@ -28,8 +28,8 @@ mim install 'mmagic'
 
 python -m pip install  mmengine 'mmcv==2.0.0' mmagic
 python -m pip install pytorch-msssim jpeg4py transformers==4.30.0
-pip install transformers --upgrade
-pip install diffusers==0.24.0 fastreid insightface onnxruntime
+python -m pip install transformers --upgrade
+python -m pip install diffusers==0.24.0 fastreid insightface onnxruntime
 python -m pip install torchinfo
 ```
 
