@@ -50,6 +50,7 @@ def parse_option():
     parser.add_argument('--silhouettes', type=str, default=None, help="your root path to data silhouettes directory")
     parser.add_argument('--Pose', type=str, default=None)
     parser.add_argument('--pose-mode', type=str, default=None)
+    parser.add_argument('--lr-aug', action='store_true')
     
     # Loading Weights & Eval  
     parser.add_argument('--strict', action='store_true', help="evaluation only")

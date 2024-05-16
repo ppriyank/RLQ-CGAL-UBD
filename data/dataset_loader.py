@@ -694,3 +694,62 @@ class ImageDataset_w_gender_Pose(ImageDataset_w_gender):
             print("****", index, e)
             quit()
 
+
+class ImageDataset_w_sil_with_lr_aug(ImageDataset_w_sil):
+    def __init__(self, **kwargs):
+        self.low_res=(16,64)
+        self.motion_blur=(8,20)
+        self.motion_blur_angle=(0,180)
+        self.g_blur=[4,22]
+        super().__init__(**kwargs)
+        self.__getitem__(0)
+
+    def create_low_res(self, img_hr):
+        H,W = img_hr.size    
+        ratio = random.choice(range(*self.low_res)) / min(H,W) 
+        img_lr = img_hr.resize((round( H * ratio), round( W *ratio)))
+        return img_lr
+
+    def create_g_blur(self, img_hr):
+        blur_strength = random.choice(range(*self.g_blur, 2)) + 1
+        img_lr = transforms.GaussianBlur(blur_strength)(img_hr)
+        return img_lr
+
+    def create_blur_motion(self, img_hr):
+        blur_strength = random.choice(range(*self.motion_blur))
+        blur_angle = random.choice(range(*self.motion_blur_angle))
+        img_lr = apply_motion_blur(np.array(img_hr), blur_strength, blur_angle)
+        img_lr = Image.fromarray( img_lr )
+        return img_lr
+
+    def __getitem__(self, index):
+        try:
+            img_path, pid, camid, clothes_id = self.dataset[index]
+            img_hr = read_image(img_path, self.illumination)            
+            indentifier = self.load_indentifier(img_path)
+            if self.train:
+                img, clothes_id = self.create_train_clothes(img_hr, indentifier, clothes_id, pid)
+                flip_coin = random.random()
+                if flip_coin < 0.33 :
+                    img_lr = self.create_low_res(img_hr)
+                    # img_lr.save("temp1.png")
+                elif flip_coin > 0.63:
+                    img_lr = self.create_g_blur(img_hr)
+                    # img_lr.save("temp2.png")
+                else:
+                    img_lr = self.create_blur_motion(img_hr)
+                    # img_lr.save("temp3.png")
+                img_lr = self.transform(img_lr)
+                img = torch.cat([img, img_lr.unsqueeze(0)])
+                clothes_id = torch.cat([clothes_id, clothes_id[0].unsqueeze(0)])
+                # save_image(normalize(img), "temp.png"), save_image(normalize(img_lr), "temp2.png")
+            else:
+                category = img_path.split("/")[-2]
+                img = self.transform(img_hr)
+            if self.return_index:
+                return img, pid, camid, clothes_id, "/".join(img_path.split("/")[-2:])
+            return img, pid, camid, clothes_id
+        except Exception as e:
+            print(index)
+            print("****", index, e)
+            quit()
