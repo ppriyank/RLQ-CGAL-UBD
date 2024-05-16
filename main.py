@@ -117,18 +117,21 @@ def create_optimizers(config, parameters, clothes_classifier):
     if config.TRAIN.OPTIMIZER.NAME == 'adam':
         optimizer = optim.Adam(parameters, lr=config.TRAIN.OPTIMIZER.LR, 
                                weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY)
-        optimizer_cc = optim.Adam(clothes_classifier.parameters(), lr=config.TRAIN.OPTIMIZER.LR, 
-                                weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY)
+        if clothes_classifier:
+            optimizer_cc = optim.Adam(clothes_classifier.parameters(), lr=config.TRAIN.OPTIMIZER.LR, 
+                                    weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY)
     elif config.TRAIN.OPTIMIZER.NAME == 'adamw':
         optimizer = optim.AdamW(parameters, lr=config.TRAIN.OPTIMIZER.LR, 
                                weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY)
-        optimizer_cc = optim.AdamW(clothes_classifier.parameters(), lr=config.TRAIN.OPTIMIZER.LR, 
-                                weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY)
+        if clothes_classifier:
+            optimizer_cc = optim.AdamW(clothes_classifier.parameters(), lr=config.TRAIN.OPTIMIZER.LR, 
+                                    weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY)
     elif config.TRAIN.OPTIMIZER.NAME == 'sgd':
         optimizer = optim.SGD(parameters, lr=config.TRAIN.OPTIMIZER.LR, momentum=0.9, 
                               weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY, nesterov=True)
-        optimizer_cc = optim.SGD(clothes_classifier.parameters(), lr=config.TRAIN.OPTIMIZER.LR, momentum=0.9, 
-                            weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY, nesterov=True)
+        if clothes_classifier:
+            optimizer_cc = optim.SGD(clothes_classifier.parameters(), lr=config.TRAIN.OPTIMIZER.LR, momentum=0.9, 
+                                weight_decay=config.TRAIN.OPTIMIZER.WEIGHT_DECAY, nesterov=True)
     else:
         raise KeyError("Unknown optimizer: {}".format(config.TRAIN.OPTIMIZER.NAME))
     
@@ -233,6 +236,9 @@ def main(config):
     model, classifier, clothes_classifier = build_model(config, dataset.num_train_pids, dataset.num_train_clothes)
     if args.extra_class_embed:
         extra_classifier = build_extra_id_classifier(config, args.extra_class_no, input_dim=args.extra_class_embed)
+    if config.TRAIN.FN == "2feats_pair4":
+        del classifier, clothes_classifier
+        classifier, clothes_classifier = None, None
     # Build identity classification loss, pairwise loss, clothes classificaiton loss, and adversarial loss.
     criterion_cla, criterion_pair, criterion_clothes, criterion_adv, criteria_feat_mse, criteria_logit_KL = build_losses(config, dataset.num_train_clothes)
     extra_loss = build_additional_losses(config, dataset.num_train_clothes)
@@ -243,10 +249,13 @@ def main(config):
         criterion_pair = None
 
     # Build optimizer
-    if args.extra_class_embed:
-        parameters = list(model.parameters()) + list(classifier.parameters()) + list(extra_classifier.parameters())
+    if config.TRAIN.FN == "2feats_pair4":
+        parameters = list(model.parameters())
     else:
-        parameters = list(model.parameters()) + list(classifier.parameters())
+        if args.extra_class_embed:
+            parameters = list(model.parameters()) + list(classifier.parameters()) + list(extra_classifier.parameters())
+        else:
+            parameters = list(model.parameters()) + list(classifier.parameters())
     optimizer, optimizer_cc, scheduler = create_optimizers(config, parameters, clothes_classifier)
 
     start_epoch = config.TRAIN.START_EPOCH
@@ -305,6 +314,8 @@ def main(config):
             train_cal_pair16_ind_2feat(epoch=epoch, **params, **additional_args)
         elif config.TRAIN.FN == "2feats_pair23": # Gender + Pose 
             train_cal_pair23_ind_2feat(epoch=epoch, **params, **additional_args)
+        elif config.TRAIN.FN == "2feats_pair4":
+            train_cal_pair4_ind_2feat(epoch=epoch, **params, **additional_args)
         else: # vanilla CAL 
             train_cal(config, epoch, model, classifier, clothes_classifier, criterion_cla, criterion_pair, 
                 criterion_clothes, criterion_adv, optimizer, optimizer_cc, trainloader, pid2clothes)

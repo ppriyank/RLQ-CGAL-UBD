@@ -174,3 +174,5 @@ cython_debug/
 *.vscode*
 *.csv
 *outputs*/*.sh
+*pyc*
+*/__pycache__/*

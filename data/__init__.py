@@ -4,7 +4,7 @@ import data.temporal_transforms as TT
 from torch.utils.data import DataLoader
 from data.dataloader import DataLoaderX
 from data.dataset_loader import *
-from data.samplers import DistributedRandomIdentitySampler, DistributedInferenceSampler
+from data.samplers import DistributedRandomIdentitySampler, DistributedInferenceSampler, DistributedRandomIdentitySampler_Percent
 
 from data.datasets.ltcc import *
 from .datasets.celebreid import *
@@ -79,7 +79,7 @@ def build_img_transforms(config):
 
 
 
-def build_dataloader(config, local_rank=None):
+def build_dataloader(config, local_rank=None, sampling = None ):
     dataset = build_dataset(config)
     additional_args = {}
     additional_args["dataset_name"] = config.DATA.DATASET
@@ -90,6 +90,8 @@ def build_dataloader(config, local_rank=None):
 
     # image dataset
     train_sampler = DistributedRandomIdentitySampler(dataset.train,  num_instances=config.DATA.NUM_INSTANCES,  seed=config.SEED)
+    if sampling:
+        train_sampler = DistributedRandomIdentitySampler_Percent(dataset.train,  percent=sampling, num_instances=config.DATA.NUM_INSTANCES,  seed=config.SEED)
     transform_train, transform_test = build_img_transforms(config)
     IMG_dataset = ImageDataset
     if config.EVAL_MODE:
@@ -102,6 +104,9 @@ def build_dataloader(config, local_rank=None):
         additional_args["sil_mode"] = config.DATA.SIL_MODE
         additional_args["clothes_dict"] = dataset.clothes_dict
     
+    if config.DATA.LR_MODE_W_SIL:
+        IMG_dataset = ImageDataset_w_sil_with_lr_aug
+        
     if config.DATA.LR_MODE:
         IMG_dataset = ImageDataset_w_res
         if config.DATA.LR_TYPE:

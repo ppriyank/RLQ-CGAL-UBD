@@ -39,7 +39,12 @@ def additional_argument(parser):
     parser.add_argument('--teacher-diff', type=str, default=None)
     parser.add_argument('--unused_param', action='store_true')
     parser.add_argument('--T-P-G', action='store_true')
-    
+
+    parser.add_argument('--sampling', type=int, default=None)
+    parser.add_argument('--no-teacher', action='store_true')
+
+    parser.add_argument('--mse-ss', action='store_true') # adds self-supervised mse loss in UBD
+    parser.add_argument('--no-mse', action='store_true') 
     return parser
 
 def main(config, args):
@@ -52,48 +57,53 @@ def main(config, args):
         config.MODEL.NAME = args.teacher_diff
     config.freeze()
     
-    trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config)
+
+    if args.sampling:
+        print(" ... TEACHER SET randomly sampled / epoch .... ")
+        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, sampling=args.sampling)
+    else:
+        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, )
     modify_config(config, dataset_teacher)
     
-    teacher_model, teacher_classifier, teacher_clothes_classifier = build_model(config, dataset_teacher.num_train_pids, dataset_teacher.num_train_clothes)
-    teacher_id_classifier = None
-    if not config.TRAIN.ONLY_CAL:
-        teacher_id_classifier = build_extra_id_classifier(config, dataset_teacher.num_train_pids)
-        teacher_id_classifier.eval()
-    teacher_model.eval()
-    teacher_classifier.eval()
-    teacher_clothes_classifier.eval()
-
-    assert config.MODEL.TEACHER_WT, f"Teacher can't be loaded {config.MODEL.TEACHER_WT}"
-    logger.info("Loading checkpoint from '{}'".format(config.MODEL.TEACHER_WT))
-    checkpoint = torch.load(config.MODEL.TEACHER_WT)
-    new_checkpoint = {}
-    classificaiton_checkpoint = {}
-    if args.T_P_G:
-        for key in checkpoint['model_state_dict']:
-            if "classifier" in key and "identity_classifier2" not in key:
-                new_key = key.replace("identity_classifier.", "")
-                classificaiton_checkpoint[new_key] = checkpoint['model_state_dict'][key]
-            else:
-                new_checkpoint[key] = checkpoint['model_state_dict'][key]
-    else:    
-        for key in checkpoint['model_state_dict']:
-            if "classifier" in key:
-                new_key = key.replace("identity_classifier.", "")
-                classificaiton_checkpoint[new_key] = checkpoint['model_state_dict'][key]
-            else:
-                new_checkpoint[key] = checkpoint['model_state_dict'][key]
-    teacher_model.load_state_dict(new_checkpoint, strict=True)
-    if not config.TRAIN.ONLY_CAL:
-        teacher_id_classifier.load_state_dict(classificaiton_checkpoint, strict=True)
-    teacher_classifier.load_state_dict(checkpoint['classifier_state_dict'])
-    if not args.T_P_G:
-        teacher_clothes_classifier.load_state_dict(checkpoint['clothes_classifier_state_dict'])
-    else:    
-        del teacher_model.branch3
-        del teacher_model.identity_classifier2
-        
-
+    teacher_model, teacher_classifier, teacher_id_classifier, teacher_clothes_classifier = None, None, None, None 
+    if not (args.no_teacher):
+        teacher_model, teacher_classifier, teacher_clothes_classifier = build_model(config, dataset_teacher.num_train_pids, dataset_teacher.num_train_clothes)
+        teacher_id_classifier = None
+        if not config.TRAIN.ONLY_CAL:
+            teacher_id_classifier = build_extra_id_classifier(config, dataset_teacher.num_train_pids)
+            teacher_id_classifier.eval()
+        teacher_model.eval()
+        teacher_classifier.eval()
+        teacher_clothes_classifier.eval()
+        assert config.MODEL.TEACHER_WT, f"Teacher can't be loaded {config.MODEL.TEACHER_WT}"
+        logger.info("Loading checkpoint from '{}'".format(config.MODEL.TEACHER_WT))
+        checkpoint = torch.load(config.MODEL.TEACHER_WT)
+        new_checkpoint = {}
+        classificaiton_checkpoint = {}
+        if args.T_P_G:
+            for key in checkpoint['model_state_dict']:
+                if "classifier" in key and "identity_classifier2" not in key:
+                    new_key = key.replace("identity_classifier.", "")
+                    classificaiton_checkpoint[new_key] = checkpoint['model_state_dict'][key]
+                else:
+                    new_checkpoint[key] = checkpoint['model_state_dict'][key]
+        else:    
+            for key in checkpoint['model_state_dict']:
+                if "classifier" in key:
+                    new_key = key.replace("identity_classifier.", "")
+                    classificaiton_checkpoint[new_key] = checkpoint['model_state_dict'][key]
+                else:
+                    new_checkpoint[key] = checkpoint['model_state_dict'][key]
+        teacher_model.load_state_dict(new_checkpoint, strict=True)
+        if not config.TRAIN.ONLY_CAL:
+            teacher_id_classifier.load_state_dict(classificaiton_checkpoint, strict=True)
+        teacher_classifier.load_state_dict(checkpoint['classifier_state_dict'])
+        if not args.T_P_G:
+            teacher_clothes_classifier.load_state_dict(checkpoint['clothes_classifier_state_dict'])
+        else:    
+            del teacher_model.branch3
+            del teacher_model.identity_classifier2
+            
     config.defrost()
     config.DATA.DATASET = args.dataset
     config.DATA.ROOT = args.root
@@ -129,12 +139,12 @@ def main(config, args):
     
     local_rank = dist.get_rank()
     model, classifier, criterion_adv, clothes_classifier = distributed_model(config, local_rank, model, classifier, criterion_adv, clothes_classifier, find_unused_parameters=args.unused_param)
-    teacher_model, teacher_id_classifier, _, teacher_clothes_classifier = distributed_model(config, local_rank, teacher_model, teacher_id_classifier, None, teacher_clothes_classifier, find_unused_parameters=args.unused_param)
-    
-    teacher_classifier = teacher_classifier.cuda(local_rank)
     torch.cuda.set_device(local_rank)
-    teacher_classifier = nn.parallel.DistributedDataParallel(teacher_classifier, device_ids=[local_rank], output_device=local_rank)
-    
+
+    if not (args.no_teacher):
+        teacher_model, teacher_id_classifier, _, teacher_clothes_classifier = distributed_model(config, local_rank, teacher_model, teacher_id_classifier, None, teacher_clothes_classifier, find_unused_parameters=args.unused_param)
+        teacher_classifier = teacher_classifier.cuda(local_rank)
+        teacher_classifier = nn.parallel.DistributedDataParallel(teacher_classifier, device_ids=[local_rank], output_device=local_rank)
     
     if args.extra_class_embed:
         extra_classifier = extra_classifier.cuda(local_rank)
@@ -154,6 +164,7 @@ def main(config, args):
     best_map = -np.inf
     best_epoch = 0
     logger.info("==> Start training")
+    
     
     params = dict(config=config, model=model, classifier=classifier, clothes_classifier=clothes_classifier, criterion_cla=criterion_cla,
         criterion_pair=criterion_pair, criterion_clothes=criterion_clothes, criterion_adv=criterion_adv, optimizer=optimizer, optimizer_cc=optimizer_cc, 
@@ -180,14 +191,17 @@ def main(config, args):
     for epoch in range(start_epoch, config.TRAIN.MAX_EPOCH):
         train_sampler.set_epoch(epoch)
         start_train_time = time.time()
-        
         if not args.Debug:
             if config.TRAIN.ONLY_CAL:
                 train_cal_pair26_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
-            
+            elif args.no_teacher & args.no_mse: # UBD - Teacher - MSE 
+                train_cal_pair12_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
+            elif args.no_teacher: # UBD - Teacher + Self Supervised MSE 
+                train_cal_pair10_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
             elif "T_P_G" in args and args.T_P_G and config.MODEL.NAME == "resnet50_joint3_5":
                 train_cal_pair30_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
-            
+            elif args.mse_ss: # UBD + self supervised MSE 
+                train_cal_pair11_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
             else:    
                 train_cal_pair9_ind_2feat(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    
                 # train_cal_pair9_ind_2feat2(epoch=epoch,  **params, **Teacher_params, **DL_loss, **additional_args)    

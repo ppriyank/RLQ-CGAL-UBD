@@ -209,3 +209,69 @@ class DistributedInferenceSampler(Sampler):
 
     def __len__(self):
         return self.num_samples
+
+
+
+class DistributedRandomIdentitySampler_Percent(DistributedRandomIdentitySampler):
+    def __init__(self, data_source, percent=100, **kwargs):
+        super().__init__(data_source, **kwargs)
+        self.percent = percent
+        # compute number of examples in an epoch
+        self.length = 0
+                # selected_pid = self.pids[ :int(self.num_identities * self.percent / 100 ) ]
+        # selected_pid = random.sample(self.pids, int(self.num_identities * self.percent / 100 )     )
+
+        selected_pid = sorted(self.pids, key = lambda pid: len(self.index_dic[pid]))
+        selected_pid=  selected_pid[: int(self.num_identities * self.percent / 100 )]
+        for pid in selected_pid:
+            idxs = self.index_dic[pid]
+            num = len(idxs)
+            if num < self.num_instances:
+                num = self.num_instances
+            self.length += num - num % self.num_instances
+        assert self.length % self.num_instances == 0
+
+        
+        if self.length // self.num_instances % self.num_replicas != 0: 
+            self.num_samples = math.ceil((self.length // self.num_instances - self.num_replicas) / self.num_replicas) * self.num_instances
+        else:
+            self.num_samples = math.ceil(self.length / self.num_replicas) 
+        self.total_size = self.num_samples * self.num_replicas
+        self.__iter__()
+
+        
+    def __iter__(self):
+        # deterministically shuffle based on epoch and seed
+        random.seed(self.seed + self.epoch)
+        np.random.seed(self.seed + self.epoch)
+
+        
+        list_container = []
+        for pid in random.sample(self.pids,  int(self.num_identities * self.percent / 100 )   ):
+            idxs = copy.deepcopy(self.index_dic[pid])
+            if len(idxs) < self.num_instances:
+                idxs = np.random.choice(idxs, size=self.num_instances, replace=True)
+            random.shuffle(idxs)
+            batch_idxs = []
+            for idx in idxs:
+                batch_idxs.append(idx)
+                if len(batch_idxs) == self.num_instances:
+                    list_container.append(batch_idxs)
+                    batch_idxs = []
+        random.shuffle(list_container)
+
+        # remove tail of data to make it evenly divisible.
+        list_container = list_container[:self.total_size//self.num_instances]
+        assert len(list_container) == self.total_size//self.num_instances
+
+        # subsample
+        list_container = list_container[self.rank:self.total_size//self.num_instances:self.num_replicas]
+        assert len(list_container) == self.num_samples//self.num_instances
+
+        ret = []
+        for batch_idxs in list_container:
+            ret.extend(batch_idxs)
+
+        return iter(ret)
+
+    

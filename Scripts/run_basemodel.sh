@@ -1,18 +1,14 @@
 cd ~/RLQ-CGAL-UBD/
 conda activate bert2
-ROOT=/data/priyank/synthetic
 
 ltcc=/data/priyank/synthetic/LTCC/
 ltcc_sil="/data/priyank/synthetic/LTCC/masks/ltcc/" 
-ltcc_bkd=/data/priyank/synthetic/LTCC/masks/ltcc/background/
-ltcc_enchanced=/data/priyank/synthetic/LTCC/Enhanced
 ltcc_pose=/data/priyank/synthetic/LTCC/AlphaPose/2DPose/
 ltcc_gender=Scripts/Helper/LTCC_Gender.csv
 
 ltcc_v1=Helper/LTCC_Validation_1.csv
 ltcc_v2=Helper/LTCC_Validation_2.csv
 ltcc_v3=Helper/LTCC_Validation_3.csv
-
 
 Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
 R_LA_15_2_ABS_GID=logs/celeb_cc_colors/R_LA_15_2_ABS_GID/best_model.pth.tar

@@ -77,6 +77,16 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
     --additional_loss="kl_o_oid" --unused_param --seed=$RUN_NO --dataset-specific 
 # ==> Best Rank-1 44.6%, achieved at epoch 100. Best MaP 21.8%
 
+##################### UBD + Sampling 
+BATCH_SIZE=28
+RUN_NO=1
+PORT=12357
+SAMPLING=100
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET_COLORS \
+    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair3" \
+    --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb \
+    --additional_loss="kl_o_oid" --unused_param --seed=$RUN_NO --dataset-specific --sampling $SAMPLING >> outputs/BM_$DATASET_ORIG'_'UBD-$SAMPLING.txt
+
 
 ############################################################
 ################### Gender + Pose  (CGAL)

@@ -65,7 +65,25 @@ GPUS=0,1
 NUM_GPU=2
 RUN_NO=1
 
+############################################################
+######## CAL (Celebrity) ############
+ROOT=$celeb
+DATASET=celeb_cc_gender
+SIL=$celeb_sil
+POSE=$celeb_pose
+GENDER=$celeb_gender
+DATASET_COLORS=celeb_colors
+DATASET_ORIG=celeb
+# Vanilla CAL 
+PORT=12345
+BATCH_SIZE=32
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal.yaml --dataset $DATASET_ORIG \
+    --gpu $GPUS --output ./ --tag VANILLA_CAL --root $ROOT --image --max_epochs 200 --backbone="resnet50" --batch_size $BATCH_SIZE --only-CAL >> outputs/celeb_cal.txt
+# ==> Best Rank-1 41.3%, achieved at epoch 90. Best MaP 18.6%
 
+
+cd /data/shared/pathak
+rsync -a ucf:/data/priyank/synthetic/LTCC ucf4:
 
 ############################################################
 ######## CAL ############
@@ -73,7 +91,7 @@ RUN_NO=1
 PORT=12345
 BATCH_SIZE=32
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal.yaml --dataset $DATASET_ORIG \
-    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --backbone="resnet50" --batch_size $BATCH_SIZE --only-CAL 
+    --gpu $GPUS --output ./ --tag VANILLA_CAL --root $ROOT --image --max_epochs 200 --backbone="resnet50" --batch_size $BATCH_SIZE --only-CAL 
 # ==> Best Rank-1 41.3%, achieved at epoch 90. Best MaP 18.6%
 
 # Vanilla CAL + Clothes Aug 
@@ -82,3 +100,7 @@ BATCH_SIZE=32
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal.yaml --dataset $DATASET_COLORS \
     --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50" --batch_size $BATCH_SIZE --only-CAL --train_fn="2feats_pair27" --seed=$RUN_NO 
 # ==> Best Rank-1 37.2%, achieved at epoch 50. Best MaP 18.7%
+
+
+
+
