@@ -285,6 +285,7 @@ def train_cal_pair3_ind_2feat(config, epoch, model, classifier, clothes_classifi
         # Get all positive clothes classes (belonging to the same identity) for each sample
 
         imgs, pids, clothes_ids, pos_mask, B, N_replicas  = HANDLE_DATA(imgs, pids, clothes_ids, pid2clothes, )
+        # save_image(normalize(imgs), "temp.png")
         # print(imgs.shape, pids, clothes_ids.shape, pos_mask.shape, B, N_replicas)
         # Measure data loading time
         data_time.update(time.time() - end)

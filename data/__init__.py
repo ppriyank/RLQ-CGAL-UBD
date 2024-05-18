@@ -11,7 +11,7 @@ from .datasets.celebreid import *
 from data.datasets.prcc import *
 from data.datasets.deepchange import *
 from data.datasets.last import *
-
+from data.datasets.ntu import *
 import copy 
 
 __factory = {
@@ -35,6 +35,8 @@ __factory = {
     'last_colors': LaST_custom_colors,
     'last_cc_gender': LaST_CC_gender,
 
+    'ntu': NTU,
+    'ntu_colors': NTU_custom_colors,
 }
 
 def get_names():
@@ -79,7 +81,7 @@ def build_img_transforms(config):
 
 
 
-def build_dataloader(config, local_rank=None, sampling = None ):
+def build_dataloader(config, local_rank=None, sampling = None, teacher_mode=None ):
     dataset = build_dataset(config)
     additional_args = {}
     additional_args["dataset_name"] = config.DATA.DATASET
@@ -87,6 +89,9 @@ def build_dataloader(config, local_rank=None, sampling = None ):
     data_loader_kwargs = {}
     if local_rank is not None:
         data_loader_kwargs["local_rank"] = local_rank
+
+    if 'ntu' in config.DATA.DATASET:
+        additional_args["load_as_video"] = True 
 
     # image dataset
     train_sampler = DistributedRandomIdentitySampler(dataset.train,  num_instances=config.DATA.NUM_INSTANCES,  seed=config.SEED)
@@ -168,26 +173,30 @@ def build_dataloader(config, local_rank=None, sampling = None ):
                                 sampler=train_sampler,
                                 batch_size=config.DATA.TRAIN_BATCH, num_workers=config.DATA.NUM_WORKERS,
                                 pin_memory=True, drop_last=True, worker_init_fn=worker_init_fn, **data_loader_kwargs)
-        galleryloader = DataLoaderX(dataset=IMG_dataset(dataset=dataset.gallery, transform=transform_test, train=False, **additional_args),
-                                sampler=DistributedInferenceSampler(dataset.gallery),
-                                batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
-        if 'prcc' in config.DATA.DATASET :
-            queryloader_same = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query_same, transform=transform_test, train=False, **additional_args),
-                                    sampler=DistributedInferenceSampler(dataset.query_same),
+        
+        queryloader, galleryloader = None, None
+        queryloader_same, queryloader_diff = None, None 
+        if not teacher_mode:
+            galleryloader = DataLoaderX(dataset=IMG_dataset(dataset=dataset.gallery, transform=transform_test, train=False, **additional_args),
+                                    sampler=DistributedInferenceSampler(dataset.gallery),
                                     batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
                                     pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
-            queryloader_diff = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query_diff, transform=transform_test, train=False, **additional_args),
-                                    sampler=DistributedInferenceSampler(dataset.query_diff),
-                                    batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                    pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
+            if 'prcc' in config.DATA.DATASET :
+                queryloader_same = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query_same, transform=transform_test, train=False, **additional_args),
+                                        sampler=DistributedInferenceSampler(dataset.query_same),
+                                        batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
+                                        pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
+                queryloader_diff = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query_diff, transform=transform_test, train=False, **additional_args),
+                                        sampler=DistributedInferenceSampler(dataset.query_diff),
+                                        batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
+                                        pin_memory=True, drop_last=False, shuffle=False, **data_loader_kwargs)
 
-            return trainloader, [queryloader_same, queryloader_diff], galleryloader, dataset, train_sampler
-        else:
-            queryloader = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query, transform=transform_test, train=False, **additional_args),
-                                    sampler=DistributedInferenceSampler(dataset.query),
-                                    batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
-                                    pin_memory=True, drop_last=False, shuffle=False , **data_loader_kwargs)
+                return trainloader, [queryloader_same, queryloader_diff], galleryloader, dataset, train_sampler
+            else:
+                queryloader = DataLoaderX(dataset=IMG_dataset(dataset=dataset.query, transform=transform_test, train=False, **additional_args),
+                                        sampler=DistributedInferenceSampler(dataset.query),
+                                        batch_size=config.DATA.TEST_BATCH, num_workers=config.DATA.NUM_WORKERS,
+                                        pin_memory=True, drop_last=False, shuffle=False , **data_loader_kwargs)
 
     return trainloader, queryloader, galleryloader, dataset, train_sampler
 

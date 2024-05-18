@@ -21,7 +21,8 @@ from tools.utils import load_pickle
 
 class ImageDataset(Dataset):
     """Image Person ReID Dataset"""
-    def __init__(self, dataset, transform=None, train=True, illumination=None, return_index=None, splits=None, dataset_name=None, **kwargs):
+    def __init__(self, dataset, transform=None, train=True, illumination=None, return_index=None, splits=None, dataset_name=None, 
+        load_as_video=None, **kwargs):
         self.dataset = dataset
         self.transform = transform
         self.illumination = illumination
@@ -29,7 +30,10 @@ class ImageDataset(Dataset):
         self.return_index = return_index
         self.splits = splits
         self.dataset_name = dataset_name
+
+        self.load_as_video = load_as_video
         # self.__getitem__(0)
+        # video_without_img_paths
 
     def __len__(self):
         return len(self.dataset)
@@ -137,7 +141,7 @@ class ImageDataset_w_sil(ImageDataset):
 
         self.dataset = sorted(self.dataset)
         print(self.transform)
-        # self.__getitem__(0)
+        self.__getitem__(0)
     
     def dataset_setup(self, dataset_name):
         if self.train:self.category = "train"
@@ -162,6 +166,11 @@ class ImageDataset_w_sil(ImageDataset):
             pant_faulty = "Scripts/Helper/LaST_Pant_faulty.csv"
             shirt_faulty = "Scripts/Helper/LaST_Shirt_faulty.csv"
             self.load_indentifier = self.prcc_indentifier
+        elif 'ntu' in dataset_name:
+            self.category = ''
+            self.load_indentifier = self.ntu_indentifier
+            self.faulty_sil = set()
+            return 
         else:
             assert False, f"Dataset {dataset_name} not found for clothes"
 
@@ -170,6 +179,9 @@ class ImageDataset_w_sil(ImageDataset):
         df = pd.read_csv(shirt_faulty, names=["images"])
         faulty_sil = faulty_sil.union(set(df.images))
         self.faulty_sil = faulty_sil
+
+    def ntu_indentifier(self, img):
+        return "/".join(img.split("/")[-4:])[:-4]
 
     def simple_indentifer(self, img):
         indentifier = img.split("/")[-1][:-4]
@@ -311,7 +323,12 @@ class ImageDataset_w_sil(ImageDataset):
     def __getitem__(self, index):
         try:
             img_path, pid, camid, clothes_id = self.dataset[index]
-            img = read_image(img_path, self.illumination)            
+            if self.load_as_video:
+                video = video_without_img_paths(img_path)
+                img = video[len(video) // 2].asnumpy()
+                img = Image.fromarray(img) 
+            else:
+                img = read_image(img_path, self.illumination)            
             indentifier = self.load_indentifier(img_path)
             if self.train:
                 if self.sil_mode == "foreground_overlap_patch_w_sil":

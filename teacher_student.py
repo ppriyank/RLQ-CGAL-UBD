@@ -60,9 +60,9 @@ def main(config, args):
 
     if args.sampling:
         print(" ... TEACHER SET randomly sampled / epoch .... ")
-        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, sampling=args.sampling)
+        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, sampling=args.sampling, teacher_mode=True)
     else:
-        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, )
+        trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, teacher_mode=True)
     modify_config(config, dataset_teacher)
     
     teacher_model, teacher_classifier, teacher_id_classifier, teacher_clothes_classifier = None, None, None, None 
