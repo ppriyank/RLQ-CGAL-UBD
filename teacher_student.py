@@ -41,6 +41,7 @@ def additional_argument(parser):
     parser.add_argument('--T-P-G', action='store_true')
 
     parser.add_argument('--sampling', type=int, default=None)
+    parser.add_argument('--dataset_sampling', type=int, default=None)
     parser.add_argument('--no-teacher', action='store_true')
 
     parser.add_argument('--mse-ss', action='store_true') # adds self-supervised mse loss in UBD
@@ -57,9 +58,12 @@ def main(config, args):
         config.MODEL.NAME = args.teacher_diff
     config.freeze()
     
-
-    if args.sampling:
-        print(" ... TEACHER SET randomly sampled / epoch .... ")
+    if args.sampling or args.dataset_sampling:
+        print(f" ... TEACHER SET randomly sampled / epoch .... , Sampler : {args.sampling} Dataset Sampling : {args.dataset_sampling}")
+        if args.dataset_sampling:
+            config.defrost()
+            config.DATA.DATASET_SAMPLING = args.dataset_sampling
+            config.freeze()
         trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, sampling=args.sampling, teacher_mode=True)
     else:
         trainloader_teacher, _, _, dataset_teacher, _ = build_dataloader(config, teacher_mode=True)
@@ -108,10 +112,8 @@ def main(config, args):
     config.DATA.DATASET = args.dataset
     config.DATA.ROOT = args.root
     config.MODEL.NAME = student_model
-    config.freeze()
-
-    config.defrost()
     config.MODEL.TEACHER_MODE = False
+    config.DATA.DATASET_SAMPLING = None
     config.freeze()
 
     trainloader, queryloader, galleryloader, dataset, train_sampler = build_dataloader(config)

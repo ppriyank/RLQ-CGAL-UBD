@@ -188,12 +188,8 @@ class NTU(object):
             img_path = osp.join(self.root, "/".join(img_name.split('/')[-4:]) )
             assert osp.exists(img_path)
             
+            dataset.append((img_path, pid, action_id, clothes_id))
             
-            if mode == 'all_test' or mode == 'train':
-                dataset.append((img_path, pid, action_id, clothes_id))
-            else:
-                dataset.append((img_path, pid, action_id, clothes_id))
-
         num_pids = len(pid_container)
         num_clothes = len(clothes_container)
 

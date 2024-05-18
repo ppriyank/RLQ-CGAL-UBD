@@ -14,7 +14,7 @@ import pandas as pd
 
 class CelebreID(object):
 
-    def __init__(self, root, name_pattern = "celeb", **kwargs):
+    def __init__(self, root, name_pattern = "celeb", dataset_sampling=None, **kwargs):
         self.root = root
 
         self.fnames = []
@@ -23,6 +23,11 @@ class CelebreID(object):
         train, num_train_pids, num_train_imgs, num_train_clothes, pid2clothes, num_camera = \
             self.preprocess(name_pattern = name_pattern, category="train")
 
+        if dataset_sampling:
+            N = len(train)
+            train = random.sample(train, int((N * dataset_sampling)/100) )
+            num_train_imgs = len(train)
+            
         query, gallery, num_test_pids, num_query_imgs, num_gallery_imgs, num_test_clothes, num_test_cam = \
             self.preprocess_test(name_pattern = name_pattern)
 

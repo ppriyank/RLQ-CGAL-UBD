@@ -54,9 +54,10 @@ def build_dataset(config):
         additional_args["validation"] = config.TEST.VALIDATION 
     if config.DATA.GENDER_FILE:
         additional_args["gender_file"] = config.DATA.GENDER_FILE
-    if config.MODEL.CAL_ON_ORIG:
+    if config.MODEL.CAL_ON_ORIG or (not config.DATA.SILHOUETTES):
         additional_args["new_clothes_pids"] = False 
-        
+    if config.DATA.DATASET_SAMPLING:
+        additional_args["dataset_sampling"] = config.DATA.DATASET_SAMPLING
     dataset = __factory[config.DATA.DATASET](root=config.DATA.ROOT, **additional_args)
 
     return dataset

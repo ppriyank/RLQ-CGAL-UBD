@@ -17,6 +17,7 @@ _F.DATA.LR_MODE = None
 _F.DATA.LR_TYPE = None
 _F.DATA.DATASET_SPECIFIC = None
 _F.DATA.LR_MODE_W_SIL = None
+_F.DATA.DATASET_SAMPLING = None
 # sampler
 
 _F.AUG = CN()
