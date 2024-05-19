@@ -178,10 +178,27 @@ def gif_generator(x , name="temp"):
     for img in x:y=Image.open(img).convert('RGB').resize((192, 384));images.append(y)
     images[0].save(f"{name}.gif", save_all=True, append_images=images[1:], duration=50, loop=0)
 
+def gif_generator2(x , name="temp"):
+    images = [] 
+    # for img in x:y=Image.fromarray(img);images.append(y)
+    for img in x:y=img.resize((192, 384));images.append(y)
+    images[0].save(f"{name}.gif", save_all=True, append_images=images[1:], duration=50, loop=0)
+
+
+
 def video_generator(x , name="temp", fps=30):
     images = [] 
     # for img in x:y=Image.fromarray(img);images.append(y)
     for img in x:y=Image.open(img).convert('RGB').resize((192,384));images.append(np.array(y))
+    out = cv2.VideoWriter(f'{name}.avi',cv2.VideoWriter_fourcc(*'DIVX'), fps, (192, 384))
+    # out = cv2.VideoWriter(f'{name}.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (192, 384))
+    for frame in images:out.write(frame)
+    out.release()
+
+def video_generator2(x , name="temp", fps=30):
+    images = [] 
+    # for img in x:y=Image.fromarray(img);images.append(y)
+    for img in x:y=img.resize((192,384));images.append(np.array(y))
     out = cv2.VideoWriter(f'{name}.avi',cv2.VideoWriter_fourcc(*'DIVX'), fps, (192, 384))
     # out = cv2.VideoWriter(f'{name}.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (192, 384))
     for frame in images:out.write(frame)

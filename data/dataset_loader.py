@@ -54,9 +54,16 @@ class ImageDataset(Dataset):
             return splits
 
     def read_vid_as_image(self, img_path):        
+        sil_path = img_path.replace('.mp4', '_sil.png' ).replace('RGB', 'Mask' )
+        sil = read_image(sil_path)    
+        sil = np.array(sil)        
+        
         video = video_without_img_paths(img_path)
         img = video[len(video) // 2].asnumpy()
+        sil, img = crop_img(sil, img, padding=10)
+
         img = Image.fromarray(img) 
+        # img.save("temp.png")
         return img
             
     def __getitem__(self, index):
@@ -147,7 +154,7 @@ class ImageDataset_w_sil(ImageDataset):
 
         self.dataset = sorted(self.dataset)
         print(self.transform)
-        self.__getitem__(0)
+        # self.__getitem__(0)
     
     def dataset_setup(self, dataset_name):
         if self.train:self.category = "train"
@@ -742,7 +749,7 @@ class ImageDataset_w_sil_with_lr_aug(ImageDataset_w_sil):
         self.motion_blur_angle=(0,180)
         self.g_blur=[4,22]
         super().__init__(**kwargs)
-        self.__getitem__(0)
+        # self.__getitem__(0)
 
     def create_low_res(self, img_hr):
         H,W = img_hr.size    

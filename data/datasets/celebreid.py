@@ -25,7 +25,14 @@ class CelebreID(object):
 
         if dataset_sampling:
             N = len(train)
-            train = random.sample(train, int((N * dataset_sampling)/100) )
+            pids_to_paths = defaultdict(list)
+            for e in train:
+                pids_to_paths[e[1]].append(e)
+            new_train = []
+            for e in pids_to_paths:
+                N = len(pids_to_paths[e])
+                new_train += random.sample( pids_to_paths[e], int((N * dataset_sampling)/100) )                
+            train = new_train
             num_train_imgs = len(train)
             
         query, gallery, num_test_pids, num_query_imgs, num_gallery_imgs, num_test_clothes, num_test_cam = \
