@@ -57,6 +57,7 @@ class NTU(object):
         logger.info("  total    | {:5d} | {:8d} | {:9d}".format(num_total_pids, num_total_imgs, num_total_clothes))
         logger.info("  ----------------------------------------")
 
+        self.clothes_dict = None
         self.train = train
         self.query = test_query
         self.gallery = test_gallery
@@ -64,6 +65,8 @@ class NTU(object):
         self.num_train_pids = num_train_pids
         self.num_train_clothes = num_train_clothes
         self.pid2clothes = pid2clothes
+        
+        self.original_num_clothes = self.num_train_clothes 
 
     def _get_names(self, fpath):
         names = []

@@ -53,6 +53,12 @@ class ImageDataset(Dataset):
             # save_image(normalize(splits), "temp.png")
             return splits
 
+    def read_vid_as_image(self, img_path):        
+        video = video_without_img_paths(img_path)
+        img = video[len(video) // 2].asnumpy()
+        img = Image.fromarray(img) 
+        return img
+            
     def __getitem__(self, index):
         img_path, pid, camid, clothes_id = self.dataset[index]
         img = read_image(img_path, self.illumination)
@@ -324,9 +330,7 @@ class ImageDataset_w_sil(ImageDataset):
         try:
             img_path, pid, camid, clothes_id = self.dataset[index]
             if self.load_as_video:
-                video = video_without_img_paths(img_path)
-                img = video[len(video) // 2].asnumpy()
-                img = Image.fromarray(img) 
+                img = self.read_vid_as_image(img_path)
             else:
                 img = read_image(img_path, self.illumination)            
             indentifier = self.load_indentifier(img_path)
@@ -399,7 +403,10 @@ class ImageDataset_w_res(ImageDataset):
     def __getitem__(self, index):
         
         img_path, pid, camid, clothes_id = self.dataset[index]
-        img_hr = read_image(img_path, self.illumination)
+        if self.load_as_video:
+            img_hr = self.read_vid_as_image(img_path)
+        else:
+            img_hr = read_image(img_path, self.illumination)
         
         if random.random() > 0.5:
             img_lr = self.create_low_res(img_hr)
@@ -417,7 +424,10 @@ class ImageDataset_w_res(ImageDataset):
 class ImageDataset_w_res_prcc(ImageDataset_w_res):
     def __getitem__(self, index):
         img_path, pid, camid, clothes_id = self.dataset[index]
-        img_hr = read_image(img_path, self.illumination)
+        if self.load_as_video:
+            img_hr = self.read_vid_as_image(img_path)
+        else:
+            img_hr = read_image(img_path, self.illumination)
         if random.random() > 0.5:
             img_lr = self.create_low_res(img_hr)
         else:
@@ -432,7 +442,11 @@ class ImageDataset_w_res_prcc(ImageDataset_w_res):
 class ImageDataset_w_res_ltcc(ImageDataset_w_res):
     def __getitem__(self, index):
         img_path, pid, camid, clothes_id = self.dataset[index]
-        img_hr = read_image(img_path, self.illumination)
+        if self.load_as_video:
+            img_hr = self.read_vid_as_image(img_path)
+        else:
+            img_hr = read_image(img_path, self.illumination)
+        
         
         flip_coin = random.random()
         # x = [(1 if random.random() < 0.33 else (2 if random.random() > 0.63 else 3)) for i in range(10000)]            
@@ -459,7 +473,10 @@ class ImageDataset_w_res_ltcc(ImageDataset_w_res):
 class ImageDataset_w_res_ONLY_LR(ImageDataset_w_res):
     def __getitem__(self, index):
         img_path, pid, camid, clothes_id = self.dataset[index]
-        img_hr = read_image(img_path, self.illumination)
+        if self.load_as_video:
+            img_hr = self.read_vid_as_image(img_path)
+        else:
+            img_hr = read_image(img_path, self.illumination)
         img_lr = self.create_low_res(img_hr)
         if self.transform is not None:
             img_hr = self.transform(img_hr)
@@ -471,7 +488,10 @@ class ImageDataset_w_res_ONLY_LR(ImageDataset_w_res):
 class ImageDataset_w_res_ONLY_MB(ImageDataset_w_res):
     def __getitem__(self, index):
         img_path, pid, camid, clothes_id = self.dataset[index]
-        img_hr = read_image(img_path, self.illumination)
+        if self.load_as_video:
+            img_hr = self.read_vid_as_image(img_path)
+        else:
+            img_hr = read_image(img_path, self.illumination)
         img_lr = self.create_blur_motion(img_hr)
         if self.transform is not None:
             img_hr = self.transform(img_hr)
@@ -483,7 +503,10 @@ class ImageDataset_w_res_ONLY_MB(ImageDataset_w_res):
 class ImageDataset_w_res_ONLY_OOF(ImageDataset_w_res):
     def __getitem__(self, index):
         img_path, pid, camid, clothes_id = self.dataset[index]
-        img_hr = read_image(img_path, self.illumination)
+        if self.load_as_video:
+            img_hr = self.read_vid_as_image(img_path)
+        else:
+            img_hr = read_image(img_path, self.illumination)
         img_lr = self.create_g_blur(img_hr)
         if self.transform is not None:
             img_hr = self.transform(img_hr)
