@@ -448,34 +448,40 @@ class ImageDataset_w_res_prcc(ImageDataset_w_res):
 
 class ImageDataset_w_res_ltcc(ImageDataset_w_res):
     def __getitem__(self, index):
-        img_path, pid, camid, clothes_id = self.dataset[index]
-        if self.load_as_video:
-            img_hr = self.read_vid_as_image(img_path)
-        else:
-            img_hr = read_image(img_path, self.illumination)
+        try:
+            img_path, pid, camid, clothes_id = self.dataset[index]
+            if self.load_as_video:
+                img_hr = self.read_vid_as_image(img_path)
+            else:
+                img_hr = read_image(img_path, self.illumination)
+            
+            
+            flip_coin = random.random()
+            # x = [(1 if random.random() < 0.33 else (2 if random.random() > 0.63 else 3)) for i in range(10000)]            
+            # values, counts = np.unique(x, return_counts=True)
+            if flip_coin < 0.33 :
+                img_lr = self.create_low_res(img_hr)
+                # img_lr.save("temp1.png")
+            elif flip_coin > 0.63:
+                img_lr = self.create_g_blur(img_hr)
+                # img_lr.save("temp2.png")
+            else:
+                img_lr = self.create_blur_motion(img_hr)
+                # img_lr.save("temp3.png")
+            
+            if self.transform is not None:
+                img_hr = self.transform(img_hr)
+                img_lr = self.transform(img_lr)
+            # save_image(img_hr, "temp.png"), save_image(img_lr, "temp2.png")
+            if self.return_index:
+                return img_lr, pid, camid, clothes_id, "/".join(img_path.split("/")[-2:])
+            
+            return img_hr, pid, camid, clothes_id, img_lr
         
-        
-        flip_coin = random.random()
-        # x = [(1 if random.random() < 0.33 else (2 if random.random() > 0.63 else 3)) for i in range(10000)]            
-        # values, counts = np.unique(x, return_counts=True)
-        if flip_coin < 0.33 :
-            img_lr = self.create_low_res(img_hr)
-            # img_lr.save("temp1.png")
-        elif flip_coin > 0.63:
-            img_lr = self.create_g_blur(img_hr)
-            # img_lr.save("temp2.png")
-        else:
-            img_lr = self.create_blur_motion(img_hr)
-            # img_lr.save("temp3.png")
-        
-        if self.transform is not None:
-            img_hr = self.transform(img_hr)
-            img_lr = self.transform(img_lr)
-        # save_image(img_hr, "temp.png"), save_image(img_lr, "temp2.png")
-        if self.return_index:
-            return img_lr, pid, camid, clothes_id, "/".join(img_path.split("/")[-2:])
-        
-        return img_hr, pid, camid, clothes_id, img_lr
+        except Exception as e:
+            print("****", index, e)
+            quit()
+
 
 class ImageDataset_w_res_ONLY_LR(ImageDataset_w_res):
     def __getitem__(self, index):

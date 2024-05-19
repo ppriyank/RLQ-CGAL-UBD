@@ -234,11 +234,12 @@ class NTU_custom_colors(NTU):
 
 
 if __name__ == "__main__":
-    model = NTU(root="/data/priyank/synthetic/NTU/RGB/")
-    # rgb_vids=Scripts/Helper/ntu_subset.csv
-    # ntu=/data/priyank/synthetic/NTU/RGB/
-    # ntu_sil="/data/priyank/synthetic/NTU/Mask/masks/jpgs" 
-    # rsync -r /data/priyank/synthetic/NTU/ ucf0:/home/c3-0/datasets/ID-Dataset/ntu/
+    dataset = NTU(root="/data/priyank/synthetic/NTU/RGB/")
+    snippet = dataset.train[1919]
     
-# cd ~/RLQ-CGAL-UBD/data/datasets/
-# python ntu.py
+    img_path = snippet[0]
+    sil_path = img_path.replace('.mp4', '_sil.png' ).replace('RGB', 'Mask' )
+    
+    
+# cd ~/RLQ-CGAL-UBD/
+# python data/datasets/ntu.py

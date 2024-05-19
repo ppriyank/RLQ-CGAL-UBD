@@ -101,6 +101,8 @@ def crop_img(sil, rgb, padding=10):
     x_right = (x_sum != 0).cumsum(axis=0).argmax(axis=0)
     x_mid = (x_left + x_right) // 2
     x_dist = x_right - x_left
+    
+    if y_dist < 100 or x_dist < 100:return sil, rgb
 
     sil = sil[ max(0, x_mid - x_dist//2 - padding): min(W, x_mid + x_dist//2 + padding), max(0, y_mid - y_dist//2 - padding): min(H, y_mid + y_dist//2 + padding)]
     rgb = rgb[ max(0, x_mid - x_dist//2 - padding): min(W, x_mid + x_dist//2 + padding), max(0, y_mid - y_dist//2 - padding): min(H, y_mid + y_dist//2 + padding)]
