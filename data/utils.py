@@ -108,3 +108,24 @@ def crop_img(sil, rgb, padding=10):
     rgb = rgb[ max(0, x_mid - x_dist//2 - padding): min(W, x_mid + x_dist//2 + padding), max(0, y_mid - y_dist//2 - padding): min(H, y_mid + y_dist//2 + padding)]
     return sil, rgb
 
+
+def crop_sil(sil, padding=10):
+    W,H,_ = sil.shape
+    
+    y_sum = sil.sum(axis=0).sum(axis=1) # y cropping is actually x xropping 
+    y_top = (y_sum != 0).argmax(axis=0)
+    y_btm = (y_sum != 0).cumsum(axis=0).argmax(axis=0)
+    y_mid = (y_top + y_btm) // 2
+    y_dist = y_btm - y_top
+    
+    x_sum = sil.sum(axis=1).sum(axis=1)
+    x_left = (x_sum != 0).argmax(axis=0)
+    x_right = (x_sum != 0).cumsum(axis=0).argmax(axis=0)
+    x_mid = (x_left + x_right) // 2
+    x_dist = x_right - x_left
+    
+    if y_dist < 100 or x_dist < 100:return sil
+
+    sil = sil[ max(0, x_mid - x_dist//2 - padding): min(W, x_mid + x_dist//2 + padding), max(0, y_mid - y_dist//2 - padding): min(H, y_mid + y_dist//2 + padding)]
+    return sil
+

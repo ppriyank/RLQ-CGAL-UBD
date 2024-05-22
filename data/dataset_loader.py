@@ -806,3 +806,64 @@ class ImageDataset_w_sil_with_lr_aug(ImageDataset_w_sil):
             print(index)
             print("****", index, e)
             quit()
+
+
+class ImageDataset_w_sil_NTU(ImageDataset_w_sil):
+    
+    def read_vid_as_image(self, img_path, crop=True):        
+        sil_path = img_path.replace('.mp4', '_sil.png' ).replace('RGB', 'Mask' )
+        sil = read_image(sil_path)    
+        sil = np.array(sil)        
+        
+        video = video_without_img_paths(img_path)
+        img = video[len(video) // 2].asnumpy()
+        if crop:
+            sil, img = crop_img(sil, img, padding=10)
+        else:
+            img = Image.fromarray(img)     
+            return sil, img
+        img = Image.fromarray(img)     
+        # img.save("temp.png")
+        return img
+
+    def foreground_overlap(self, img, pant_sil, shirt_sil, pid=-1, clothes_id=-1, alpha =0.70, test_mode=None, faulty=None, indentifier=None):
+        pant_sil = self.load_sil(pant_sil)
+        # Image.fromarray(pant_sil * 255).save("temp.png")
+        shirt_sil = self.load_sil(shirt_sil)
+        # Image.fromarray(shirt_sil * 255).save("temp2.png")
+        
+        masked_image, assigned_label = self.change_clothes_color(shirt_sil, pant_sil, img, alpha, faulty)
+        # print(f'Active CUDA Device: {dist.get_rank()} COLOR: {assigned_label} NAME: {indentifier}' )
+        masked_image = Image.fromarray(masked_image)
+        # masked_image.save("temp.png")
+        effective_label = self.original_clothes + pid * self.offset + assigned_label
+        effective_label = torch.tensor([clothes_id, effective_label])
+    
+        return masked_image, effective_label
+
+
+    def __getitem__(self, index):
+        img_path, pid, camid, clothes_id = self.dataset[index]    
+        indentifier = self.load_indentifier(img_path)        
+        if self.train:
+            sil_array, img = self.read_vid_as_image(img_path, crop=False)
+            masked_image, clothes_id = self.create_train_clothes(img, indentifier, clothes_id, pid)
+            
+            _, masked_image = crop_img(sil_array, np.array(masked_image), padding=10)
+            _, img = crop_img(sil_array, np.array(img), padding=10)
+            img = Image.fromarray(img)     
+            masked_image = Image.fromarray(masked_image)     
+
+            # img.save("T1.png"), masked_image.save("T2.png")
+            img = self.transform(img)
+            masked_image = self.transform(masked_image)
+            img = torch.stack([img, masked_image])
+        
+        else:
+            img = self.read_vid_as_image(img_path)
+            category = img_path.split("/")[-2]
+            img = self.transform(img)
+        if self.return_index:
+            return img, pid, camid, clothes_id, "/".join(img_path.split("/")[-2:])
+        return img, pid, camid, clothes_id
+    

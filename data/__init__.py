@@ -92,8 +92,8 @@ def build_dataloader(config, local_rank=None, sampling = None, teacher_mode=None
         data_loader_kwargs["local_rank"] = local_rank
 
     if 'ntu' in config.DATA.DATASET:
-        additional_args["load_as_video"] = True 
-
+            additional_args["load_as_video"] = True 
+        
     # image dataset
     train_sampler = DistributedRandomIdentitySampler(dataset.train,  num_instances=config.DATA.NUM_INSTANCES,  seed=config.SEED)
     if sampling:
@@ -109,6 +109,8 @@ def build_dataloader(config, local_rank=None, sampling = None, teacher_mode=None
         additional_args["silhouettes"] = config.DATA.SILHOUETTES   
         additional_args["sil_mode"] = config.DATA.SIL_MODE
         additional_args["clothes_dict"] = dataset.clothes_dict
+        if 'ntu' in config.DATA.DATASET:
+            IMG_dataset = ImageDataset_w_sil_NTU
     
     if config.DATA.LR_MODE_W_SIL:
         IMG_dataset = ImageDataset_w_sil_with_lr_aug

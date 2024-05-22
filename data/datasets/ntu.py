@@ -18,7 +18,7 @@ def mkdir_if_missing(directory):
 
 
 class NTU(object):
-    def __init__(self, root='data', pid_separator = 60, **kwargs):
+    def __init__(self, root='data', pid_separator = 60, dataset_sampling=None, **kwargs):
         self.root = root
         
         split_file = '~/RLQ-CGAL-UBD/Scripts/Helper/ntu_subset.csv'
@@ -28,6 +28,20 @@ class NTU(object):
         pid2label, clothes2label, pid2clothes, cam2label, action2label = self.get_pid2label_and_clothes2label(file_names, pid_separator=pid_separator)
         
         train, num_train_pids, num_train_clothes = self._process_dir(file_names, clothes2label, action2label=action2label, cam2label=cam2label, pid2label=pid2label, mode='train', pid_separator=pid_separator)
+
+        if dataset_sampling:
+            N = len(train)
+            pids_to_paths = defaultdict(list)
+            for e in train:
+                pids_to_paths[e[1]].append(e)
+            new_train = []
+            for e in pids_to_paths:
+                N = len(pids_to_paths[e])
+                new_train += random.sample( pids_to_paths[e], int((N * dataset_sampling)/100) )                
+            train = new_train
+            num_train_imgs = len(train)
+            
+        
 
         all_test, all_num_test_pids, all_num_test_clothes  = self._process_dir(file_names, clothes2label, action2label=action2label, cam2label=cam2label, pid2label=pid2label, mode='all_test')
         
