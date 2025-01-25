@@ -13,6 +13,7 @@ ltcc_v1=Helper/LTCC_Validation_1.csv
 ltcc_v2=Helper/LTCC_Validation_2.csv
 ltcc_v3=Helper/LTCC_Validation_3.csv
 
+Celeb_Wt_KL=logs/celeb/B=40_KL_4/best_model.pth.tar
 Celeb_Wt_KL=logs/celeb/B=40_KL_4/checkpoint_ep200.pth.tar
 R_LA_15_2_ABS_GID=logs/celeb_cc_colors/R_LA_15_2_ABS_GID/best_model.pth.tar
 R_LAC_25_CGAL=logs/celeb_cc_colors/R_LAC_25_1_ABS_GID/best_model.pth.tar

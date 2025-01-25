@@ -12,6 +12,7 @@ from data.datasets.prcc import *
 from data.datasets.deepchange import *
 from data.datasets.last import *
 from data.datasets.ntu import *
+from data.datasets.market import *
 import copy 
 
 __factory = {
@@ -37,6 +38,8 @@ __factory = {
 
     'ntu': NTU,
     'ntu_colors': NTU_custom_colors,
+
+    'market': Market1501,    
 }
 
 def get_names():
