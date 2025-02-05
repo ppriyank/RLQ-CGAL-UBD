@@ -309,29 +309,44 @@ PORT=12347
 BATCH_SIZE=28
 RUN_NO=2
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET_ORIG \
-    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair3" --additional_loss 'kl_o_oid' >> outputs/BM-$DATASET_ORIG-$RUN_NO.txt
+    --gpu $GPUS --output ./ --tag image-$RUN_NO --root $ROOT --image --max_epochs 200 --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair3" --additional_loss 'kl_o_oid' >> outputs/BM-$DATASET_ORIG-$RUN_NO.txt
+
+checkpoint=market/scratch_image/best_model.pth.tar
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET_ORIG \
+    --gpu $GPUS --output ./ --tag image-$RUN_NO --root $ROOT --image --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --resume $checkpoint --eval --no-classifier 
+    
 
 
+    
 ##################### Only UBD    
 BATCH_SIZE=28
-RUN_NO=2
+RUN_NO=1
 PORT=12345
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET_ORIG \
-    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair3" \
+    --gpu $GPUS --output ./ --tag UBD-$RUN_NO --root $ROOT --image --max_epochs 200 --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair3" \
     --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb \
-    --additional_loss="kl_o_oid" --unused_param --seed=$RUN_NO --dataset-specific >> outputs/$DATASET_ORIG'_'UBD-NTU-UCF-$BATCH_SIZE-$RUN_NO.txt
+    --additional_loss="kl_o_oid" --unused_param --seed=$RUN_NO --dataset-specific >> outputs/UBD-$DATASET_ORIG-$RUN_NO.txt
 
 
 
+# rsync -r ~/RLQ-CGAL-UBD/logs ucf0:~/RLQ-CGAL-UBD/
 
     
      
 
 
+# RQL-1 
+checkpoint=logs/RLQ_25_B=32_1/best_model.pth.tar
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --root $ROOT --image --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size 40 --train_fn="2feats_pair23" --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --class_2=26 --Pose=$POSE --pose-mode="R_LA_25" --overlap_2=-3 --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO \
+    --eval --resume $checkpoint --tag RLQ_25_B=32_1 --no-classifier 
+
+# BM_28_4_LTCC.pkl 
+# 'RLQ_25_B=32_1.pkl'
 
 
-
-
+    
+    
 
 
 

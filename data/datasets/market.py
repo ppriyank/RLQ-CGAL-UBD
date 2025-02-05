@@ -10,6 +10,18 @@ import logging
 import os.path as osp
 import numpy as np
 
+import os 
+from collections import defaultdict
+import pandas as pd 
+import random 
+
+def make_folder(name):
+    try: 
+        os.mkdir(name) 
+    except OSError as error: 
+        _ = 0 
+    return 
+
 
 
 class Market1501(object):
@@ -50,7 +62,8 @@ class Market1501(object):
 
         self.pid2clothes = np.eye(self.num_train_pids)
         self.num_train_clothes = self.num_train_pids
-        
+        # self.gender_csv(train)
+
     def _check_before_run(self):
         """Check if all files are available before going deeper"""
         if not osp.exists(self.dataset_dir):
@@ -121,3 +134,78 @@ class Market1501(object):
             else:
                 dataset.append((img_path, self.pid_begin + pid, camid, 0))
         return dataset
+    
+    def gender_csv(self, train):
+        pid_to_path = defaultdict(list)
+        images_database = []
+        for e in train:
+            pid_to_path[ e[1] ].append( e[0] ) 
+            
+        src = "Dump/"
+        make_folder(src)
+        for person in pid_to_path:
+            dest = f"{src}/{person}"
+            make_folder(dest)
+            selected = random.choices(pid_to_path[ person ], k = 2)
+            for img_path in selected:
+                os.system(f'cp {img_path} {dest}')
+            images_database.append(["train", person, "0"])
+
+        df = pd.DataFrame(images_database, columns = ["Category","ID","Gender"]) 
+        assert os.path.exists(f"Scripts/Helper/market_Gender.csv") == False, "Market Gender csv will be overwritten!!"
+        df.to_csv(f"Scripts/Helper/market_Gender.csv", index=False,)  
+
+       
+class Market1501_CC_gender(Market1501):
+    def __init__(self, root='data', gender_file=None, **kwargs):
+        
+        df = pd.read_csv(gender_file)
+        self.gender_mapping = {i[1]:i[2] for i in df.values}
+        
+        super().__init__(root=root, **kwargs)
+        
+    def get_imagedata_info(self, data):
+        pids, cams, tracks = [], [], []
+        for e in data:
+            pid, camid, trackid = e[1], e[2], e[3]
+            pids += [pid]
+            cams += [camid]
+            tracks += [trackid]
+        pids = set(pids)
+        cams = set(cams)
+        tracks = set(tracks)
+        num_pids = len(pids)
+        num_cams = len(cams)
+        num_imgs = len(data)
+        num_views = len(tracks)
+        return num_pids, num_imgs, num_cams, num_views
+        
+    
+    def _process_dir(self, dir_path, relabel=False):
+        img_paths = glob.glob(osp.join(dir_path, '*.jpg'))
+        pattern = re.compile(r'([-\d]+)_c(\d)')
+
+        pid_container = set()
+        for img_path in sorted(img_paths):
+            pid, _ = map(int, pattern.search(img_path).groups())
+            if pid == -1: continue  # junk images are just ignored
+            pid_container.add(pid)
+        pid2label = {pid: label for label, pid in enumerate(pid_container)}
+        dataset = []
+        for img_path in sorted(img_paths):
+            pid, camid = map(int, pattern.search(img_path).groups())
+            if pid == -1: continue  # junk images are just ignored
+            assert 0 <= pid <= 1501  # pid == 0 means background
+            assert 1 <= camid <= 6
+            camid -= 1  # index starts from 0
+            if relabel: 
+                pid = pid2label[pid]
+                gender = self.gender_mapping[pid]
+
+            if relabel:
+                dataset.append((img_path, self.pid_begin + pid, camid, pid, gender))
+            else:
+                dataset.append((img_path, self.pid_begin + pid, camid, 0))
+        return dataset
+    
+    

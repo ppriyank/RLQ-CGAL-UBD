@@ -59,25 +59,6 @@ NUM_GPU=1
 RUN_NO=1
 
 
-############################################################
-######## Base Model ############
-# BaseModel -- Foreground Aug 
-PORT=12347
-BATCH_SIZE=28
-RUN_NO=2
-CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET_ORIG \
-    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --backbone="eva" --batch_size $BATCH_SIZE --train_fn="2feats_pair4" --additional_loss 'kl_o_oid' --size 224,224
-# ==> Best Rank-1 39.3%, achieved at epoch 40. Best MaP 17.9%
-
-# BaseModel 
-PORT=12348
-BATCH_SIZE=28
-RUN_NO=4
-CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET_COLORS \
-    --gpu $GPUS --output ./ --tag scratch_image --root $ROOT --image --max_epochs 200 --silhouettes=$SIL --sil_mode "foreround_overlap" --backbone="resnet50_joint2" --batch_size $BATCH_SIZE --train_fn="2feats_pair3" --additional_loss 'kl_o_oid' --seed=$RUN_NO
-# ==> Best Rank-1 42.1%, achieved at epoch 40. Best MaP 20.9%
-
-
 
 
 ROOT=$celeb
@@ -112,6 +93,13 @@ checkpoint=Dump/UBD-BM-NoTeacher-NoMSE/best_model.pth.tar
 CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT main.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset celeb_colors --gpu $GPUS --output ./ --silhouettes=$celeb_sil --root $celeb --image --sil_mode "foreround_overlap" --backbone="resnet50_joint2" \
     --tag BM_NT_NoMSE_Celeb_LR --resume $checkpoint --eval --LR-MODE --no-classifier --dataset-specific
 # top1:21.0% top5:29.9% top10:34.9% top20:40.8% mAP:2.1%    
+
+
+# RQL-1 
+checkpoint=logs/RLQ_25_B=32_1/best_model.pth.tar
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --root $ROOT --image --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size 40 --train_fn="2feats_pair23" --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --class_2=26 --Pose=$POSE --pose-mode="R_LA_25" --overlap_2=-3 --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO \
+    --eval --resume $checkpoint --tag RLQ_25_B=32_1 --no-classifier 
 
 
 

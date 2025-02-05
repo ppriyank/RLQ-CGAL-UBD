@@ -184,6 +184,11 @@ class ImageDataset_w_sil(ImageDataset):
             self.load_indentifier = self.ntu_indentifier
             self.faulty_sil = set()
             return 
+        elif 'market' in dataset_name:
+            self.category = ''
+            self.load_indentifier = self.simple_indentifer
+            self.faulty_sil = set()
+            return 
         else:
             assert False, f"Dataset {dataset_name} not found for clothes"
 
@@ -440,6 +445,7 @@ class ImageDataset_w_res_prcc(ImageDataset_w_res):
         else:
             img_lr = self.create_g_blur(img_hr)
         
+        # img_hr.save("temp.png"), img_lr.save("temp2.png")
         if self.transform is not None:
             img_hr = self.transform(img_hr)
             img_lr = self.transform(img_lr)
@@ -658,6 +664,8 @@ class ImageDataset_w_gender_Pose(ImageDataset_w_gender):
             self.setup_celeb_dataset(body_mode=body_mode, use_body_shape=use_body_shape, use_pose_sample=use_pose_sample, pose_mode=pose_mode)
         elif "last" in dataset_name:
             self.setup_last_dataset(body_mode=body_mode, use_body_shape=use_body_shape, use_pose_sample=use_pose_sample, pose_mode=pose_mode)
+        elif "market" in dataset_name:
+            self.setup_market_dataset(body_mode=body_mode, use_body_shape=use_body_shape, use_pose_sample=use_pose_sample, pose_mode=pose_mode)
         else:
             import pdb
             pdb.set_trace()
@@ -718,6 +726,12 @@ class ImageDataset_w_gender_Pose(ImageDataset_w_gender):
         if use_pose_sample:
             self.setup_pose(pose_mode, POSE_config)    
         self.load_indentifier = self.prcc_indentifier
+
+    def setup_market_dataset(self, body_mode=None, use_body_shape=None, use_pose_sample=None, pose_mode=None):
+        POSE_config = "Scripts/Helper/MARKET_Pose_Cluster.csv"
+        if use_pose_sample:
+            self.setup_pose(pose_mode, POSE_config)    
+        self.load_indentifier = self.simple_indentifer
 
     def __getitem__(self, index):
         pose_label = -1   

@@ -40,6 +40,7 @@ __factory = {
     'ntu_colors': NTU_custom_colors,
 
     'market': Market1501,    
+    'market_gender': Market1501_CC_gender, 
 }
 
 def get_names():
@@ -135,6 +136,8 @@ def build_dataloader(config, local_rank=None, sampling = None, teacher_mode=None
                     IMG_dataset = ImageDataset_w_res_ltcc
                 elif "celeb" in config.DATA.DATASET_SPECIFIC:
                     IMG_dataset = ImageDataset_w_res_ltcc
+                elif "market" in config.DATA.DATASET_SPECIFIC:
+                    IMG_dataset = ImageDataset_w_res_prcc
                 else:
                     import pdb
                     pdb.set_trace()
@@ -146,6 +149,8 @@ def build_dataloader(config, local_rank=None, sampling = None, teacher_mode=None
                 IMG_dataset = ImageDataset_w_res_prcc
             elif "ltcc" in config.DATA.DATASET_SPECIFIC or "last" in config.DATA.DATASET_SPECIFIC:
                 IMG_dataset = ImageDataset_w_res_ltcc
+            elif "market" in config.DATA.DATASET_SPECIFIC :
+                IMG_dataset = ImageDataset_w_res_prcc
             else:
                 import pdb
                 pdb.set_trace()

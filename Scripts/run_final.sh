@@ -153,3 +153,10 @@ CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_
 # PRCC : BATCH_SIZE=40, RUN_NO=3
 # ==> Best Rank-1 63.4%, achieved at epoch 20. Best MaP 61.8%
 
+
+################### RLQ EVAL 
+checkpoint=logs/RLQ_25_B=32_1/best_model.pth.tar
+CUDA_VISIBLE_DEVICES=$GPUS python -W ignore -m torch.distributed.launch --nproc_per_node=$NUM_GPU --master_port $PORT teacher_student.py --cfg configs/res50_cels_cal_tri_16x4.yaml --dataset $DATASET \
+    --gpu $GPUS --output ./ --root $ROOT --image --teacher-diff "resnet50_joint2" --backbone="resnet50_joint3_3" --batch_size 40 --train_fn="2feats_pair23" --teacher_wt $Celeb_Wt_KL --teacher_dataset celeb --teacher_dir $celeb --class_2=26 --Pose=$POSE --pose-mode="R_LA_25" --overlap_2=-3 --use_gender $GENDER --extra_class_embed 4096 --extra_class_no 2 --gender_id --seed=$RUN_NO \
+    --eval --resume $checkpoint --tag RLQ_25_B=32_1 --no-classifier 
+
