@@ -1,5 +1,5 @@
 # RLQ-CGAL-UBD
-Implementation of **Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID** [Arxiv]() 
+Implementation of **Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID** [Arxiv](https://arxiv.org/abs/2505.12580v1) 
  
 ### Table of Contents 
 * **[Cite](#citation)**<br>  
