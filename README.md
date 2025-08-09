@@ -107,11 +107,12 @@ All Pose Clusters and Gender related Information for each dataset is kept in [Sc
 If you like our work, please consider citing us: 
 
 ```
-@article{,
-  title={Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID},
+
+@inproceedings{pathak2025coarse,
+  title={Coarse Attribute Prediction with Task Agnostic Distillation for Real World Clothes Changing ReID},
   author={Pathak, Priyank and Rawat, Yogesh S},
-  journal={ArXiv},
-  year={2024},
-  volume={ }
+  booktitle ={36th British Machine Vision Conference 2025, {BMVC} 2025, Sheffield, UK, November 24-27, 2025},
+  year={2025},
+  publisher={{BMVA} Press},
 }
 ```
