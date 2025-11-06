@@ -1,7 +1,7 @@
-# RLQ-CGAL-UBD (BMVC'25)
+# Coarse Attribute Prediction with Task Agnostic Distillation for Real World Clothes Changing ReID || RLQ-CGAL-UBD || BMVC'25 
 Implementation of **Coarse-grained Attribute Learning with Unsupervised Distillation for Real-World Clothes Changing ReID** 
 
-# [Arxiv](https://arxiv.org/abs/2505.12580v1)  | [Video](https://www.youtube.com/watch?v=1z7KCcZkGoI) | [More ReID](https://ucf-crcv.github.io/ReID) 
+# [Paper](https://bmvc2025.bmva.org/proceedings/346/) | [Arxiv](https://arxiv.org/abs/2505.12580v1)  | [Video](https://www.youtube.com/watch?v=1z7KCcZkGoI) | [More ReID](https://ucf-crcv.github.io/ReID) 
  
 ### Table of Contents 
 * **[Cite](#citation)**<br>  
@@ -109,12 +109,12 @@ All Pose Clusters and Gender related Information for each dataset is kept in [Sc
 If you like our work, please consider citing us: 
 
 ```
-
-@inproceedings{pathak2025coarse,
-  title={Coarse Attribute Prediction with Task Agnostic Distillation for Real World Clothes Changing ReID},
-  author={Pathak, Priyank and Rawat, Yogesh S},
-  booktitle ={36th British Machine Vision Conference 2025, {BMVC} 2025, Sheffield, UK, November 24-27, 2025},
-  year={2025},
-  publisher={{BMVA} Press},
+@inproceedings{Pathak_2025_BMVC,
+    author    = {Priyank Pathak and Yogesh S Rawat},
+    title     = {Coarse Attribute Prediction with Task Agnostic Distillation for Real World Clothes Changing ReID},
+    booktitle = {36th British Machine Vision Conference 2025, {BMVC} 2025, Sheffield, UK, November 24-27, 2025},
+    publisher = {BMVA},
+    year      = {2025},
+    url       = {https://bmva-archive.org.uk/bmvc/2025/papers/Paper_346/paper.pdf}
 }
 ```
